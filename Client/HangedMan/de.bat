@@ -1,0 +1,1 @@
+game\scripts\deactivate.bat
