@@ -1,85 +1,97 @@
-import game, tools, users
+import socket, os, time, tools, users, threading
+from game import Game
 
-g = game.Game()
+def exit():
+    inp = input()
+    if inp == "exit":
+        os._exit(0)
 
-def display_stats():
-    if g.dead == True:
-        print
-        print(f"\nThe game has ended\nYour final Score is {g.score}")
-        print(f"Word was {g.random_word}")
-        print(f"\nProgress = {g.progress}")
-    else:
-        print(f"\nProgress = {g.progress}")
-        print(f"Letters used = {g.used_letters}")
-        print(f"Tries used: {g.count}/7")
-        print(f"Score = {g.score}")
+t = threading.Thread(target=exit)
+t.start()
 
-def input_strings(args):
-    string = args[0]
-    return g.event(string)
+server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+ip, port = "127.0.0.1", 65000
+server.bind((ip, port))
+server.listen(1)
 
-def change_level(args):
-    level = args[0]
-    return g.update_level(level)
+print(f"Server listening on {ip}: {port}")
 
+class Instance():
+    def __init__(self, client):
+        self.games = {}
+        self.client = client
+        self.input_functions = input_functions = {
+            "signin": self.signin,  
+            "signup": users.signup,
 
-def levelled(args):
-    level = args[1]
-    print("Your level will change to " + level + " after this word!")
+            # "new_game": new_game
+            }
+        self.data_stream()
 
-def next_word(args):
-    word = args[1]
-    score = args[2]
+    def data_stream(self):
+        while True:
+            info = self.client.recv(1024).decode("utf-8")
 
-    print(f"Word '{word}'' COMPLETE! Score: {score}")
+            args = tools.separator(info)
+            print(args)
 
-display_stats()
+            function_string = args[0]
+            try:
+                if args[0] == "break":
+                    break
+            except IndexError:
+                self.client.send("code0006:f".encode("utf-8"))
 
-def input_stream():
-    functions = {
-        "submit": input_strings,
-        "level": change_level
-    }
+            function_string = args[0]
 
-    output_functions = {
-        "levelled": levelled,
-        "nextword": next_word
-    }
+            try:
+                function = self.input_functions[function_string]
+            except KeyError:
+                self.client.send("code0005:f".encode("utf-8"))
+                continue
 
-    while True:
-        inp = input("Enter inputs: ")
-        separated = tools.separator(inp)
-        
+            response = function(args)
+            print(response)
+
+            try:
+                self.client.send(response.encode("utf-8"))
+            except AttributeError:
+                continue
+
+    def signin(self, args):
+        """password and username in a list to login"""
+    
+        if len(args) > 3:
+            return "code0000:m"
+    
         try:
-            func = separated[0]
-            args = separated[1:]
+            userName = args[1]
+            password = args[2]
         except IndexError:
-            print("IndexError: isufficent number of args")
-            print("Inputs not entered")
-            continue
-
-        try:
-            function = functions[func]
+            return "code0004:i"
+    
+        users_on_file = users.loadUsers()
+    
+        try: 
+            passwordOnFile = users_on_file[userName]
         except KeyError:
-            print("Key not in dict")
-            print("Inputs not entered")
-            continue
-
-        out = function(args)
-
-        try:
-            out = tools.separator(out)
-        except TypeError:
-            pass
+            return "code0004:u"
+    
+        if password != passwordOnFile:
+            return "code0004:c"
         else:
-            output_function_string = out[0]
-            output_function = output_functions[output_function_string]
-            output_function(out)
+            self.input_functions.update({
+                "new_game": self.new_game
+                })
+            self.username = userName
+            return "code0004:s"
 
-        display_stats()
+    def new_game(self, args):
+        self.game = Game(self.username)
+        return "New game created by " + self.username
 
-        if g.dead == True:
-            break
-        print(g.random_word)
+while True:
+    client, addr = server.accept()
+    Instance(client)
 
-input_stream()
+    

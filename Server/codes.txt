@@ -1,0 +1,18 @@
+code0000:f no spaces in username or password allowed
+
+code0001:f FileNotFoundError
+
+code0002:f username not on file
+
+code0003:f username or password missing
+
+code0000:m no spaces in username or password allowed
+code0004:c client password wrong
+code0004:s sucessfully logged in
+code0004:p sucessfully signed up
+code0004:i insufficient args
+code0004:u username not on file
+
+code0005:f incorrect input (no funncion that matches)
+
+code0006:f no input

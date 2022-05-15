@@ -28,15 +28,23 @@ def checkUser(userName):
     else:
         return 1
 
-def createUsers(newUsers):
+def signup(args):
     """create users from input"""
-    oldUsers = loadUsers()
+    if len(args) > 3:
+        return "code0000:m"
 
-    for userName, passWord in newUsers.items():
-        oldUsers.update({userName: passWord})
+    try:
+        userName = args[1]
+        password = args[2]
+    except IndexError:
+        return "code0004:i"
+
+    oldUsers = loadUsers()
+    oldUsers.update({userName: password})
     
     saveUsers(oldUsers)
-    print("users created")
+
+    return "code0004:p"
 
 def updatePassword(updates):
     """updates existing password of users"""
@@ -47,25 +55,3 @@ def updatePassword(updates):
     
     saveUsers(oldData)
     print("passwords updated")
-
-loggedIn = []
-def logged(userName="", password="", mode='r'):
-    """return the list of users logged with mode 'r', and add a user to the 
-    list with 'a'"""
-
-    if mode == "a":
-        if password == "" or userName == "":
-            print("Mode 'a' incompatible with empty username or password")
-            return "Mode 'a' incompatible with empty username or password"
-        else:
-            users = loadUsers()
-            passwordOnFile = users[userName]
-
-            if password != passwordOnFile:
-                return "code0004:c"
-            else:
-                loggedIn.append(userName)
-                return "code0004:s"
-
-    else 'r':
-        return loggedIn

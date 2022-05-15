@@ -2,7 +2,7 @@ from json import load
 from random import randint, choice
 
 class Game:
-    def __init__(self):
+    def __init__(self, username):
         self.words = self.init_words()
 
         self.level = "1"
