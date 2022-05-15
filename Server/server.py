@@ -1,4 +1,4 @@
-import socket, os, time, tools, users, threading
+import socket, os, time, tools, users, threading, json
 from game import Game
 
 def exit():
@@ -15,10 +15,10 @@ server.bind((ip, port))
 server.listen(1)
 
 print(f"Server listening on {ip}: {port}")
-
+games = {}
 class Instance():
     def __init__(self, client):
-        self.games = {}
+        self.game = {}
         self.client = client
         self.input_functions = input_functions = {
             "signin": self.signin,  
@@ -36,14 +36,14 @@ class Instance():
             print(args)
 
             function_string = args[0]
+
             try:
-                if args[0] == "break":
-                    break
+                function_string = args[0]
             except IndexError:
                 self.client.send("code0006:f".encode("utf-8"))
 
-            function_string = args[0]
-
+            if function_string == "break":
+                break
             try:
                 function = self.input_functions[function_string]
             except KeyError:
@@ -89,6 +89,9 @@ class Instance():
     def new_game(self, args):
         self.game = Game(self.username)
         return "New game created by " + self.username
+
+    def save_game(self):
+        self.games.update({username: self.game})
 
 while True:
     client, addr = server.accept()
