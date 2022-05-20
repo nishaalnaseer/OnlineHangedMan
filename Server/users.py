@@ -6,8 +6,7 @@ def loadUsers():
         with open("users.json", 'r') as f:
             users = json.load(f)
     except FileNotFoundError:
-        print("code0001:f FileNotFoundError")
-        users = {}
+        return {}
     
     return users
 
@@ -30,21 +29,27 @@ def checkUser(userName):
 
 def signup(args):
     """create users from input"""
-    if len(args) > 3:
-        return "code0000:m"
-
-    try:
-        userName = args[1]
-        password = args[2]
-    except IndexError:
-        return "code0004:i"
+    username = args[1]
+    password = args[2]
 
     oldUsers = loadUsers()
-    oldUsers.update({userName: password})
-    
-    saveUsers(oldUsers)
 
-    return "code0004:p"
+    try:
+        if username in oldUsers.keys():
+            print(oldUsers.keys())
+            # if so the code afterwards will not be executed
+            return "Username already taken."
+    except AttributeError:
+        new_user_list = {username: password}
+    else:
+        # update the list of user dict
+        new_user_list = oldUsers.update({username: password})
+        print(new_user_list)
+    
+    saveUsers(new_user_list)  # save dictionary
+
+    return "User Successfully Created!"
+    
 
 def updatePassword(updates):
     """updates existing password of users"""
@@ -55,3 +60,30 @@ def updatePassword(updates):
     
     saveUsers(oldData)
     print("passwords updated")
+
+loggedIn = []
+def signin(args):
+    """accepts a list of arguments"""
+    try:
+        password = args[1]
+        userName = args[0]
+    except IndexError:
+        return "Invalid number of arguments"
+
+    if username in loggedIn:
+        return "User already logged in"
+
+    if password == "" or userName == "":
+        print("Mode 'a' incompatible with empty username or password")
+
+    users = loadUsers()
+    try:
+        passwordOnFile = users[userName]
+    except KeyError:
+        return "code0004:w"
+
+    if password != passwordOnFile:
+        return "code0004:c"
+    else:
+        loggedIn.append(userName)
+        return "code0004:s"

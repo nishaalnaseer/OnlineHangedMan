@@ -2,8 +2,9 @@ from json import load
 from random import randint, choice
 
 class Game:
-    def __init__(self, username):
+    def __init__(self, args):
         self.words = self.init_words()
+        self.username = args[1]
 
         self.level = "1"
 
@@ -73,7 +74,6 @@ class Game:
                 {
             level of words: {index of word: word}
         }
-
         so to get random word = 
             level of words = words[level]
                 random word = level_of_words[random_num]
@@ -186,10 +186,11 @@ class Game:
     def update_level(self, inp):
         """update and adjust the level"""
         # turn it into int to adjust
-        try:
-            level = int(inp)
-        except Exception as e:
-            print(e)
+        # try:
+        #     level = int(inp)
+        # except ZeroDivionError as e:
+        #     return "code0007:a"
+        level = int(inp)
 
         if level > 11:
             # also turn it back into a str here
@@ -197,8 +198,29 @@ class Game:
         elif level < 1:
             level = "1"
         else:
-            level = str(level)
-
-        self.level = level  # update class attribute
+            self.level = str(level)  # update class attribute
 
         return "levelled " + level
+
+    def save(self):
+        """ function to save game data to file"""
+        with open("data.json", "r") as f:
+            # load old data
+            user_data = json.load(f)
+        
+        data = {
+            "level": self.level,
+            "word_lenght": self.word_lenght,
+            "progress": self.progress,
+            "random_word_list": self.random_word_list,
+            "count": self.count,
+            "used_letters": self.used_letters,
+            "random_word": self.random_word,
+            "dead": self.dead,
+            "score": self.score,
+        }
+
+        user_data.update({username: data})  # update it
+
+        with open("data.json", "w") as f:
+            json.dump(user_data, f)  # save it back to file
