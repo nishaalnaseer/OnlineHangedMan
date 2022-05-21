@@ -189,10 +189,12 @@ class Game:
     def update_level(self, inp):
         """update and adjust the level"""
         # turn it into int to adjust
-        # try:
-        level = int(inp)
-        # except ZeroDivionError as e:
-        #     return "code0007:a"
+        try:
+            level = int(inp)
+        except ZeroDivionError:
+            return "code0007:a"
+        except ValueError:
+            return "code0007:b"
 
         if level > 11:
             # also turn it back into a str here

@@ -1,0 +1,42 @@
+input_functions = {
+            # user functions here
+            "signin": username password
+            "signup": username password
+
+            "hi_scos": no args
+
+            # set to return an error code unless signed in
+            # game function below only available after signin
+            "new_game": no args
+            "submit": letters entered with NO SPACES IN BETWEEN if spaces after the first letter the rest arent counted
+            "level": int num
+            }
+
+enter fucntion string like signin or signup then args if there are any
+
+responses = {
+            "code0000:f": "no spaces in username or password allowed",
+            "code0001:f": "incorrect number of args",
+            "code0001:i": "username already taken",
+            "code0001:s": "sucessfully signed up",
+            "code0001:a": "created too many users for now",
+            "code0002:f": "username not on file",
+            "code0003:f": "username or password missing",
+            "code0000:m": "no spaces in username or password allowed",
+            "code0004:c": "client password wrong",
+            "code0004:s": "sucessfully logged in",
+            "code0004:p": "sucessfully signed up",
+            "code0004:i": "insufficient args",
+            "code0004:j": "too many args",
+            "code0004:u": "username not on file",
+            "code0005:f": "incorrect input (no funncion that matches)",
+            "code0006:f": "no input",
+            "code0007:s": "New Game",
+            "code0007:f": "incorrect number of args",
+            "code0007:a": "zerodivison error",
+            "code0007:b": "ValueError prolly str with char to int"
+            "code0008:f": "incorrect number of args",
+            "code0009:f": "user has not signed in",
+            "code0010:g": "player is dead need to start a new_game",
+            "code0010:g": "player just died",
+        }
