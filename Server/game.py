@@ -148,7 +148,7 @@ class Game:
             self.progress = f"{self.progress[:k]}{v}{self.progress[k+1:]}"
 
         check = self._check()
-        
+
         return check
 
     def hints(self, random_word):
@@ -172,25 +172,27 @@ class Game:
     def _check(self):
         # check if current progression is enough for next word
         progress = list(self.progress)
+
         if "-" not in progress:
             # next word contidition
-            # set score before statement to avoid sending unupdated score to
-            # user and set self.random_word last to avoud sending the current
-            # word to the user 
+            previous_word = self.random_word  # to send back to the user
             self.score += (self.word_lenght ** 2) + (self.word_lenght * 2)
-            statement = f"nextword {self.random_word} {self.score}"
             self.random_word = self.get_random_word()
+            statement = f"nextword {self.progress} {previous_word} {self.score}"
 
-            return statement
+        else:
+            # update on current word
+            statement = f"update {self.progress} {self.count} {self.score}"
+
+        return statement
 
     def update_level(self, inp):
         """update and adjust the level"""
         # turn it into int to adjust
         # try:
-        #     level = int(inp)
+        level = int(inp)
         # except ZeroDivionError as e:
         #     return "code0007:a"
-        level = int(inp)
 
         if level > 11:
             # also turn it back into a str here
@@ -200,7 +202,7 @@ class Game:
         else:
             self.level = str(level)  # update class attribute
 
-        return "levelled " + level
+        return f"levelled " + self.level
 
     def save(self):
         """ function to save game data to file"""

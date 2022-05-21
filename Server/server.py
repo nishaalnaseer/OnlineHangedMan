@@ -25,14 +25,18 @@ class Instance:
         # init here to keep some track of vars
         # self.game defined further either at signin, load game
         self.client = client  # for better access across class
-        self.ip = addr[0]  # identification
-        self.username = "<NUL>"
+        self.ip = addr[0]  # identification with user creations
+        self.id = self.ip  # for identification is equated to username after signin
+        self.username = "<<NUL>>"
         self.input_functions = {
             # user functions here
             "signin": self.signin,
             "signup": self.signup,
 
-            # set to return an error unless signed in
+            "hi_scos": self.return_hi_scos,
+
+            # set to return an error code unless signed in
+            # game function below only available after signin
             "new_game": self.dummy,
             "submit": self.dummy,
             "level": self.dummy,
@@ -59,7 +63,9 @@ class Instance:
             "code0007:f": "incorrect number of args",
             "code0007:a": "zerodivison error",
             "code0008:f": "incorrect number of args",
-            "code0009:f": "invalid input",
+            "code0009:f": "user has not signed in",
+            "code0010:g": "player is dead need to start a new_game",
+            "code0010:g": "player just died",
         }
 
         self.data_stream()  # a loop where client and server communicates
@@ -85,9 +91,8 @@ class Instance:
             except IndexError:
                 # incase user send message without any letters
                 self.client.send("code0006:f".encode("utf-8"))
-
-            # if function_string == "break":
-            #     break
+                self.print_response("code0006:f", "code0006:f")
+                continue
 
             try:
                 # get memory location of the needed function
@@ -96,6 +101,7 @@ class Instance:
                 # the key is not in dict return an error to user
                 # continue statements skip all the code below it
                 self.client.send("code0005:f".encode("utf-8"))
+                self.print_response(function_string, "code0005:f")
                 continue
 
             # enter the list of args into the function and store it in a var 
@@ -108,6 +114,11 @@ class Instance:
                 # some functions do not return a value therefore the above line
                 # raises an error
                 pass
+
+            try: 
+                self.print_response(function_string, response)
+            except KeyError:
+                print("Sent: '" + response + "' to " + self.id)
 
     def signin(self, args):
         """password and username in a list to login"""
@@ -144,10 +155,13 @@ class Instance:
         
         self.input_functions.update({
             # if user is signed in update the dict to allow game funcitons
-            "new_game": self.new_game
+            "new_game": self.new_game,
+            "level": self.change_level,
+            "submit":self.submit,
             })
 
         self.username = userName  # set the username public
+        self.id = userName  # console idenification
 
         self.savefile = f"{userName}.json"
         self.new_game()
@@ -159,22 +173,31 @@ class Instance:
                 save_game = json.load(f)
         except FileNotFoundError:
             # if no such file new_game is called and game.__dict__will not be empty
+            self.hi_sco = 0
             new_game()
         else:
             # if no eerror save the things in file to main dict
             self.game.__dict__ = save_game
         finally:
-            return "code0004:s"  # sucessfully logged in
+            with open("hi-scos.json", 'r') as f:
+                scores = json.load(f)
+            self.hi_sco = scores[self.username]
+            return "code0004:s " + self.game.progress # sucessfully logged in
 
     def print_args(self, args):
+        statement = f"Recieved from {self.id}: '"
         for r in args:
-            print(r, end=" ")
+            statement += r + " "
+        statement = statement[:-1]
+        print(statement + "'")
 
     def print_response(self, func, response):
-        print(f"{func}: {self.responses[response]}")
+        statement = f"Function: {func} - Sent: '{self.responses[response]}' to {self.id}"
+        print(statement)
 
     def signup(self, args):
-        global ipdata
+        """function to create new user"""
+        global ipdata  # information about ips and their last user creation
 
         if len(args) != 3:
             return "code0001:f"
@@ -183,27 +206,39 @@ class Instance:
         password = args[2]
         
         with open("users.json", 'r') as f:
-            data = json.load(f)
+            data = json.load(f)  #load old data
 
         try:
             ipdata = signup_ip[self.ip]
         except KeyError:
+            # if key error then this is the first time this ip is creating a user
             pass
         else:
+            # else and time is less than 30 minutes return an error code
             last_time = ipdata[1]
             if (time() - last_time) < 1800:
                 return "code0001:a"
         
-        timestamp = time()
+        timestamp = time()  # get cuurennt timestamp if user is being created
         
         try:
             data[username]
         except KeyError:
+            # if keyerror then this is the first time this ip is being used to create a user
             data.update({username: password})
             with open("users.json", 'w') as f:
                 json.dump(data, f)
             
-            signup_ip.update({self.ip: [username, timestamp]})
+            signup_ip.update({self.ip: [username, timestamp]})  # save
+
+            with open("hi-scos.json", 'r') as f:
+                scores = json.load(f)
+            scores.update({username: 0})
+
+            with open("hi-scos.json", 'w') as f:
+                json.dump(scores, f)
+
+
             return "code0001:s"
         else:
             return "code0001:i"
@@ -219,13 +254,27 @@ class Instance:
         """function save game"""
         with open(self.savefile, 'w') as f:
             json.dump(self.game.__dict__, f)
+
+        try:
+            self.hi_sco
+        except AttributeError:
+            self.hi_sco = 0
+
+        if self.game.score > self.hi_sco:
+            hi_sco = self.game.scores
+            with open("hi-scos.json", 'r') as f:
+                scores = json.load(f)
+            scores.update({self.username, self.hi_sco})
+
+            with open("hi-scos.json", 'w') as f:
+                json.dump(scores)
         
     def dummy(self, args=[]):
         # this is a dummy function that returns an error code
         return "code0009:f"
-    
-    def output(self):
-        pass
+
+    def dead(self, args=[]):
+        return "code0010:g"
     
     def change_level(self, args):
         """function to check args and change level"""
@@ -234,14 +283,36 @@ class Instance:
         
         inp = args[1] 
         
-        response = game.update_level(inp)
+        response = self.game.update_level(inp)
         return response
     
     def submit(self, args):
         if len(args) != 2:
             return "code0008:f"
         
-        response = game.submit(args[1])
+        response = self.game.event(args[1])
+        print(f"Real word of {self.id}: {self.game.random_word}")
+
+        if self.game.dead == True:
+
+            self.input_functions.update({
+                # if user is signed in update the dict to allow game funcitons
+                "new_game": self.new_game,
+                "level": self.dead,
+                "submit":self.dead,
+                })
+            return f"code0010:g {self.game.score} {self.game.random_word}"
+
+        return response
+
+    def return_hi_scos(self, args=[]):
+        with open("hi-scos.json", 'r') as f:
+            scores = json.load(f)
+
+        response = "scores "
+        for k, v in scores.items():
+            response += f"{k} {v} "
+
         return response
 
 if __name__ == "__main__":
