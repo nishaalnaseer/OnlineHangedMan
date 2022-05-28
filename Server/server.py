@@ -26,7 +26,7 @@ class Instance:
         # self.game defined further either at signin, load game
         self.client = client  # for better access across class
         self.ip = addr[0]  # identification with user creations
-        self.id = self.ip  # for identification is equated to username after signin
+        self.id = self.ip  # for identification, is equated to username after signin
         self.username = "<<NUL>>"
         self.input_functions = {
             # user functions here
@@ -41,7 +41,6 @@ class Instance:
             "submit": self.dummy,
             "level": self.dummy,
             }
-
         self.responses = {
             "code0000:f": "no spaces in username or password allowed",
             "code0001:f": "incorrect number of args",
@@ -79,7 +78,10 @@ class Instance:
             try:
                 info = self.client.recv(1024).decode("utf-8")
             except ConnectionResetError:
-                print(f"{self.ip} has forcibly closed connection")
+                print(f"{self.id} has forcibly closed connection")
+                break
+            except ConnectionAbortedError:
+                print(f"{self.id} has forcibly closed connection")
                 break
 
             # turn the message from client into a list form management
@@ -175,7 +177,7 @@ class Instance:
         except FileNotFoundError:
             # if no such file new_game is called and game.__dict__will not be empty
             self.hi_sco = 0
-            new_game()
+            self.new_game()
         else:
             # if no eerror save the things in file to main dict
             self.game.__dict__ = save_game
@@ -183,7 +185,7 @@ class Instance:
             with open("hi-scos.json", 'r') as f:
                 scores = json.load(f)
             self.hi_sco = scores[self.username]
-            return "code0004:s " + self.game.progress # sucessfully logged in
+            return f"code0004:s {self.game.progress} {self.hi_sco}"# sucessfully logged in
 
     def print_args(self, args):
         statement = f"Recieved from {self.id}: '"
@@ -246,10 +248,16 @@ class Instance:
 
     def new_game(self, args=[]):
         """function to create a new game"""
-        self.game = Game(self.username)  # init game
+        self.game = Game(self.username)  # reinit game
+        self.input_functions.update({
+            # if user is signed in update the dict to allow game funcitons
+            "level": self.change_level,
+            "submit": self.submit,
+            })
+
         self.save_game()  # save new game to disk
 
-        return "code0007:s"
+        return f"new_game {self.game.progress}"
 
     def save_game(self):
         """function save game"""
@@ -261,14 +269,16 @@ class Instance:
         except AttributeError:
             self.hi_sco = 0
 
+        # print(f"this is working hi score is {self.hi_sco} score is {self.game.score}") # debug
+
         if self.game.score > self.hi_sco:
-            hi_sco = self.game.scores
+            self.hi_sco = self.game.score
             with open("hi-scos.json", 'r') as f:
                 scores = json.load(f)
-            scores.update({self.username, self.hi_sco})
+            scores.update({self.username: self.hi_sco})
 
             with open("hi-scos.json", 'w') as f:
-                json.dump(scores)
+                json.dump(scores, f)
 
     def dummy(self, args=[]):
         # this is a dummy function that returns an error code
@@ -298,12 +308,12 @@ class Instance:
 
             self.input_functions.update({
                 # if user is signed in update the dict to allow game funcitons
-                "new_game": self.new_game,
                 "level": self.dead,
-                "submit":self.dead,
+                "submit": self.dead,
                 })
             return f"code0010:g {self.game.score} {self.game.random_word}"
 
+        self.save_game()
         return response
 
     def return_hi_scos(self, args=[]):
@@ -319,6 +329,12 @@ class Instance:
 if __name__ == "__main__":
     t = threading.Thread(target=exit)
     t.start()  # classic thrading       
+
+    while True:
+        client, addr = server.accept()
+        Instance(client, addr)
+    t = threading.Thread(target=exit)
+    t.start()  # classic thrading
 
     while True:
         client, addr = server.accept()
