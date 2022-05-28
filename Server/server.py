@@ -62,7 +62,7 @@ class Instance:
             "code0007:s": "New Game",
             "code0007:f": "incorrect number of args",
             "code0007:a": "zerodivison error",
-            "code0007:b": "ValueError prolly str with char to int"
+            "code0007:b": "ValueError prolly str with char to int",
             "code0008:f": "incorrect number of args",
             "code0009:f": "user has not signed in",
             "code0010:g": "player is dead need to start a new_game",
