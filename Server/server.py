@@ -1,6 +1,7 @@
 import socket, os, time, tools, users, threading, json
 from game import Game
 from time import time
+import datetime
 
 def exit():
     """end server at any time  by entering exit"""
@@ -27,6 +28,7 @@ class Instance:
         self.client = client  # for better access across class
         self.ip = addr[0]  # identification with user creations
         self.id = self.ip  # for identification, is equated to username after signin
+        self.cport = addr[1]
         self.username = "<<NUL>>"
         self.input_functions = {
             # user functions here
@@ -82,6 +84,15 @@ class Instance:
                 break
             except ConnectionAbortedError:
                 print(f"{self.id} has forcibly closed connection")
+                break
+            
+            ignored = [None, "", ]
+            if info in ignored:
+                current_time = datetime.datetime.now()
+                statement = f"{current_time}: Ignored shit from {self.id}:{self.cport}\n"
+                print(statement)
+                with open("log.txt", "a") as f:
+                    f.write(statement)
                 break
 
             # turn the message from client into a list form management
