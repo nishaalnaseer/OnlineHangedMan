@@ -1,4 +1,4 @@
-import socket, os, time, tools, users, threading, json, aes
+import socket, os, time, tools, users, threading, json
 from game import Game
 from time import time
 
@@ -16,8 +16,6 @@ server.listen(1)
 
 print(f"Server listening on {ip}:{port}")
 signup_ip = {}
-
-ciphering = aes.AESCipher("DWKLAJWKLJWKAJDKLNkdnajkwnd23")
 
 class Instance:
     """Named Instance because this is an instance of a player in a Game()"""
@@ -72,13 +70,10 @@ class Instance:
         while True:
             # message from client
             try:
-                info = self.client.recv(1024)
+                info = self.client.recv(1024).decode("utf-8")
             except ConnectionResetError:
                 print(f"{self.ip} has forcibly closed connection")
                 break
-
-            # decrypt
-            info = ciphering.decrypt(info)
 
             # turn the message from client into a list form management
             args = tools.separator(info)
@@ -106,12 +101,9 @@ class Instance:
             # enter the list of args into the function and store it in a var 
             response = function(args)
 
-            # encrypt
-            response = ciphering.encrypt(response)
-
             try:
                 # send response to the user
-                self.client.send(response)
+                self.client.send(response.encode("utf-8"))
             except AttributeError:
                 # some functions do not return a value therefore the above line
                 # raises an error
