@@ -204,4 +204,4 @@ class Game:
         else:
             self.level = str(level)  # update class attribute
 
-        return f"levelled " + self.level
+        return "levelled " + self.level
