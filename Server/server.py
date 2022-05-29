@@ -1,7 +1,7 @@
 import socket, os, time, tools, users, threading, json
 from game import Game
 from time import time
-import datetime
+from datetime import datetime
 
 def exit():
     """end server at any time  by entering exit"""
@@ -17,6 +17,7 @@ server.listen(1)
 
 print(f"Server listening on {ip}:{port}")
 signup_ip = {}
+blocked_ips = []
 
 class Instance:
     """Named Instance because this is an instance of a player in a Game()"""
@@ -29,6 +30,8 @@ class Instance:
         self.ip = addr[0]  # identification with user creations
         self.id = self.ip  # for identification, is equated to username after signin
         self.cport = addr[1]
+        self.block_counter = 0
+        self.big_block_counter = 0
         self.username = "<<NUL>>"
         self.input_functions = {
             # user functions here
@@ -75,6 +78,7 @@ class Instance:
     def data_stream(self):
         """main function of this class
         a loop where client and server can communicate in turn"""
+        global blocked_ips
         while True:
             # message from client
             try:
@@ -84,15 +88,6 @@ class Instance:
                 break
             except ConnectionAbortedError:
                 print(f"{self.id} has forcibly closed connection")
-                break
-            
-            ignored = [None, "", ]
-            if info in ignored:
-                current_time = datetime.datetime.now()
-                statement = f"{current_time}: Ignored shit from {self.id}:{self.cport}\n"
-                print(statement)
-                with open("log.txt", "a") as f:
-                    f.write(statement)
                 break
 
             # turn the message from client into a list form management
@@ -104,8 +99,13 @@ class Instance:
                 function_string = args[0]
             except IndexError:
                 # incase user send message without any letters
+                self.blocker(code="code0006:f", info=info)
+
                 self.client.send("code0006:f".encode("utf-8"))
-                self.print_response("code0006:f", "code0006:f")
+                # self.print_response("code0006:f", "code0006:f")
+                if self.block_counter == 5 or self.big_block_counter == 100:
+                    break
+
                 continue
 
             try:
@@ -114,9 +114,16 @@ class Instance:
             except KeyError:
                 # the key is not in dict return an error to user
                 # continue statements skip all the code below it
+                self.blocker(code="code0005:f", info=info)
+
                 self.client.send("code0005:f".encode("utf-8"))
-                self.print_response(function_string, "code0005:f")
+                
+                if self.block_counter == 5 or self.big_block_counter == 100:
+                    break
+
                 continue
+            else:
+                self.block_counter = 0
 
             # enter the list of args into the function and store it in a var 
             response = function(args)
@@ -337,16 +344,36 @@ class Instance:
 
         return response
 
-if __name__ == "__main__":
-    t = threading.Thread(target=exit)
-    t.start()  # classic thrading       
+    def blocker(self, code, info):
+        self.block_counter += 1
+        self.big_block_counter += 1
+        now = datetime.now()
 
-    while True:
-        client, addr = server.accept()
-        Instance(client, addr)
+        if self.block_counter == 6 or self.big_block_counter == 100:
+            code = "code0011:a"
+            self.client.send(code.encode("utf-8"))
+            blocked_ips.append(self.ip)
+            now = datetime.now()
+
+            with open("log.txt", 'a') as f:
+                f.write(f"{now} {self.ip} has been blocked!\n")
+                print(f"{self.ip} has been blocked!")
+        
+        log_statement = f"{now} {self.id} - received: '{info}' sent: '{code}'"
+        log_statement += f" block_counter: {self.block_counter}"
+        print(log_statement)
+        log_statement += "\n"
+        with open("log.txt", 'a') as f:
+            f.write(log_statement)
+
+if __name__ == "__main__":
     t = threading.Thread(target=exit)
     t.start()  # classic thrading
 
     while True:
         client, addr = server.accept()
+
+        if addr[0] in blocked_ips:
+            continue
+
         Instance(client, addr)
