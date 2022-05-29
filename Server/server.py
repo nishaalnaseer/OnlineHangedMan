@@ -10,15 +10,6 @@ def exit():
         if inp == "exit":
             os._exit(0)
 
-server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-ip, port = "127.0.0.1", 65000
-server.bind((ip, port))
-server.listen(1)
-
-print(f"Server listening on {ip}:{port}")
-signup_ip = {}
-blocked_ips = []
-
 class Instance:
     """Named Instance because this is an instance of a player in a Game()"""
     def __init__(self, client, addr):
@@ -85,9 +76,11 @@ class Instance:
                 info = self.client.recv(1024).decode("utf-8")
             except ConnectionResetError:
                 print(f"{self.id} has forcibly closed connection")
+                self.save_game()
                 break
             except ConnectionAbortedError:
                 print(f"{self.id} has forcibly closed connection")
+                self.save_game()
                 break
 
             # turn the message from client into a list form management
@@ -185,7 +178,7 @@ class Instance:
         self.id = userName  # console idenification
 
         self.savefile = f"{userName}.json"
-        self.new_game()
+        # self.new_game()
 
         try:
             # try opening the savefile
@@ -195,14 +188,19 @@ class Instance:
         except FileNotFoundError:
             # if no such file new_game is called and game.__dict__will not be empty
             self.hi_sco = 0
-            self.new_game()
-        else:
-            # if no eerror save the things in file to main dict
-            self.game.__dict__ = save_game
         finally:
+            # if no eerror save the things in file to main dict
+            self.new_game()
+
+            if save_game["dead"] == False:
+                self.game.__dict__ = save_game
+
             with open("hi-scos.json", 'r') as f:
                 scores = json.load(f)
-            self.hi_sco = scores[self.username]
+            self.hi_sco = scores[userName]
+
+            if self.hi_sco < save_game["score"]:
+                self.hi_sco = save_game["score"]
             return f"code0004:s {self.game.progress} {self.hi_sco}"# sucessfully logged in
 
     def print_args(self, args):
@@ -369,6 +367,15 @@ class Instance:
 if __name__ == "__main__":
     t = threading.Thread(target=exit)
     t.start()  # classic thrading
+
+    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    ip, port = "127.0.0.1", 65000
+    server.bind((ip, port))
+    server.listen(1)
+
+    print(f"Server listening on {ip}:{port}")
+    signup_ip = {}
+    blocked_ips = []
 
     while True:
         client, addr = server.accept()
