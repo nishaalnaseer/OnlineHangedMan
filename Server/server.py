@@ -10,6 +10,8 @@ def exit():
         if inp == "exit":
             os._exit(0)
 
+ip, port = "127.0.0.1", 65000
+            
 class Instance:
     """Named Instance because this is an instance of a player in a Game()"""
     def __init__(self, client, addr):
@@ -369,7 +371,6 @@ if __name__ == "__main__":
     t.start()  # classic thrading
 
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    ip, port = "127.0.0.1", 65000
     server.bind((ip, port))
     server.listen(1)
 
