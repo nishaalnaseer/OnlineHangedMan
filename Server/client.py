@@ -7,6 +7,10 @@ client.connect((ip, port))
 
 while True:
     msg = input("send to server: ")
+    if msg == "":
+        print("Server does not acccept empty strings")
+        continue
+
     client.send(msg.encode("utf-8"))
 
     msg = client.recv(1024).decode("utf-8")

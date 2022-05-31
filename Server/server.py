@@ -179,7 +179,7 @@ class Instance:
         self.username = userName  # set the username public
         self.id = userName  # console idenification
 
-        self.savefile = f"{userName}.json"
+        self.savefile = f"user_files/{userName}.json"
         # self.new_game()
 
         try:
