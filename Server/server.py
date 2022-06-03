@@ -1,7 +1,12 @@
-import socket, os, time, tools, users, threading, json
+import socket, os, tools, users, threading, json
 from game import Game
 from time import time
 from datetime import datetime
+
+if os.name == "nt":
+    slash = '\\'
+else:
+    slash = '/'
 
 def exit():
     """end server at any time  by entering exit"""
@@ -78,12 +83,19 @@ class Instance:
                 info = self.client.recv(1024).decode("utf-8")
             except ConnectionResetError:
                 print(f"{self.id} has forcibly closed connection")
-                self.save_game()
+                try:
+                    self.save_game()
+                except AttributeError:
+                    self.blocker(code="code0012:a", info="no info ConnectionResetError")
+                    break
                 break
             except ConnectionAbortedError:
                 print(f"{self.id} has forcibly closed connection")
                 self.save_game()
                 break
+
+            info = info.replace('\n', '')
+            info = info.replace('\r', '')
 
             # turn the message from client into a list form management
             args = tools.separator(info)
@@ -96,7 +108,7 @@ class Instance:
                 # incase user send message without any letters
                 self.blocker(code="code0006:f", info=info)
 
-                self.client.send("code0006:f".encode("utf-8"))
+                self.client.send("code0006:f\n".encode("utf-8"))
                 # self.print_response("code0006:f", "code0006:f")
                 if self.block_counter == 5 or self.big_block_counter == 100:
                     break
@@ -111,7 +123,7 @@ class Instance:
                 # continue statements skip all the code below it
                 self.blocker(code="code0005:f", info=info)
 
-                self.client.send("code0005:f".encode("utf-8"))
+                self.client.send("code0005:f\n".encode("utf-8"))
                 
                 if self.block_counter == 5 or self.big_block_counter == 100:
                     break
@@ -125,7 +137,7 @@ class Instance:
 
             try:
                 # send response to the user
-                self.client.send(response.encode("utf-8"))
+                self.client.send(f"{response}\n".encode("utf-8"))
             except AttributeError:
                 # some functions do not return a value therefore the above line
                 # raises an error
@@ -179,7 +191,7 @@ class Instance:
         self.username = userName  # set the username public
         self.id = userName  # console idenification
 
-        self.savefile = f"user_files/{userName}.json"
+        self.savefile = f"user_files{slash}{userName}.json"
         # self.new_game()
 
         try:
@@ -187,26 +199,25 @@ class Instance:
             with open(self.savefile, 'r') as f:
                 # load all games from disk to memory
                 save_game = json.load(f)
+            if save_game["dead"] == False:
+                self.new_game()
+                self.game.__dict__ = save_game
+            if self.hi_sco < save_game["score"]:
+                self.hi_sco = save_game["score"]
         except FileNotFoundError:
             # if no such file new_game is called and game.__dict__will not be empty
             self.hi_sco = 0
+            self.new_game()
         finally:
             # if no eerror save the things in file to main dict
-            self.new_game()
-
-            if save_game["dead"] == False:
-                self.game.__dict__ = save_game
 
             with open("hi-scos.json", 'r') as f:
                 scores = json.load(f)
             self.hi_sco = scores[userName]
-
-            if self.hi_sco < save_game["score"]:
-                self.hi_sco = save_game["score"]
             return f"code0004:s {self.game.progress} {self.hi_sco}"# sucessfully logged in
 
     def print_args(self, args):
-        statement = f"Recieved from {self.id}: '"
+        statement = f"Recieved from {self.id}: "
         for r in args:
             statement += r + " "
         statement = statement[:-1]
@@ -350,7 +361,7 @@ class Instance:
         now = datetime.now()
 
         if self.block_counter == 6 or self.big_block_counter == 100:
-            code = "code0011:a"
+            code = "code0011:a\n"
             self.client.send(code.encode("utf-8"))
             blocked_ips.append(self.ip)
             now = datetime.now()

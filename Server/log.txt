@@ -1,0 +1,85 @@
+2022-06-04 00:03:14.441155 127.0.0.1 - received: 'no info ConnectionResetError' sent: 'code0012:a' block_counter: 2
+2022-06-04 00:26:46.106152 127.0.0.1 - received: 'hello
+' sent: 'code0005:f' block_counter: 1
+2022-06-04 00:27:29.971231 127.0.0.1 - received: 'no info ConnectionResetError' sent: 'code0012:a' block_counter: 3
+2022-06-04 00:30:03.293474 127.0.0.1 - received: 'no info ConnectionResetError' sent: 'code0012:a' block_counter: 2
+2022-06-04 00:35:15.209615 127.0.0.1 - received: 'no info ConnectionResetError' sent: 'code0012:a' block_counter: 2
+2022-06-04 00:35:35.089838 127.0.0.1 - received: 'h
+' sent: 'code0005:f' block_counter: 1
+2022-06-04 00:37:14.393941 127.0.0.1 - received: 'no info ConnectionResetError' sent: 'code0012:a' block_counter: 3
+2022-06-04 00:37:14.396943 127.0.0.1 - received: 'h
+' sent: 'code0005:f' block_counter: 1
+2022-06-04 00:37:50.484299 127.0.0.1 - received: 'h
+' sent: 'code0005:f' block_counter: 1
+2022-06-04 00:50:12.799176 127.0.0.1 - received: 'no info ConnectionResetError' sent: 'code0012:a' block_counter: 3
+2022-06-04 00:50:21.422862 127.0.0.1 - received: 'signin
+' sent: 'code0005:f' block_counter: 1
+2022-06-04 00:50:21.923168 127.0.0.1 - received: 'no info ConnectionResetError' sent: 'code0012:a' block_counter: 3
+2022-06-04 00:55:25.114206 127.0.0.1 - received: 'signin
+' sent: 'code0005:f' block_counter: 1
+2022-06-04 00:56:26.504801 127.0.0.1 - received: 'no info ConnectionResetError' sent: 'code0012:a' block_counter: 3
+2022-06-04 00:56:48.859953 127.0.0.1 - received: 'helo
+' sent: 'code0005:f' block_counter: 1
+2022-06-04 01:02:16.807787 127.0.0.1 - received: 'no info ConnectionResetError' sent: 'code0012:a' block_counter: 2
+2022-06-04 01:09:23.705171 127.0.0.1 - received: 'hello
+' sent: 'code0005:f' block_counter: 1
+2022-06-04 01:20:00.147774 127.0.0.1 - received: 'no info ConnectionResetError' sent: 'code0012:a' block_counter: 2
+2022-06-04 01:20:10.514864 127.0.0.1 - received: 'hello
+' sent: 'code0005:f' block_counter: 1
+2022-06-04 01:21:27.693442 127.0.0.1 - received: 'hello
+' sent: 'code0005:f' block_counter: 1
+2022-06-04 01:22:56.538248 127.0.0.1 - received: 'no info ConnectionResetError' sent: 'code0012:a' block_counter: 2
+2022-06-04 01:23:17.481308 127.0.0.1 - received: 'fwasd
+' sent: 'code0005:f' block_counter: 1
+2022-06-04 01:26:01.102969 127.0.0.1 - received: 'no info ConnectionResetError' sent: 'code0012:a' block_counter: 2
+2022-06-04 01:26:07.017426 127.0.0.1 - received: 'hello
+' sent: 'code0005:f' block_counter: 1
+2022-06-04 01:26:33.670370 127.0.0.1 - received: 'no info ConnectionResetError' sent: 'code0012:a' block_counter: 2
+2022-06-04 01:26:38.720874 127.0.0.1 - received: 'hello
+' sent: 'code0005:f' block_counter: 1
+2022-06-04 01:26:44.019102 127.0.0.1 - received: 'hello
+' sent: 'code0005:f' block_counter: 2
+2022-06-04 01:26:47.472473 127.0.0.1 - received: 'he;;p
+' sent: 'code0005:f' block_counter: 3
+2022-06-04 01:26:50.178261 127.0.0.1 - received: 'hello
+' sent: 'code0005:f' block_counter: 4
+2022-06-04 01:26:52.199308 127.0.0.1 - received: 'ggg
+' sent: 'code0005:f' block_counter: 5
+2022-06-04 01:27:37.858524 127.0.0.1 - received: 'hello
+' sent: 'code0005:f' block_counter: 1
+2022-06-04 01:27:39.894148 127.0.0.1 - received: 'hello
+' sent: 'code0005:f' block_counter: 2
+2022-06-04 01:27:41.659518 127.0.0.1 - received: 'hello
+' sent: 'code0005:f' block_counter: 3
+2022-06-04 01:27:43.331288 127.0.0.1 - received: 'hello
+' sent: 'code0005:f' block_counter: 4
+2022-06-04 01:27:45.371488 127.0.0.1 - received: 'hello
+' sent: 'code0005:f' block_counter: 5
+2022-06-04 01:29:29.747636 127.0.0.1 - received: 'signin
+' sent: 'code0005:f' block_counter: 1
+2022-06-04 01:29:29.759074 127.0.0.1 - received: 'nishaal
+' sent: 'code0005:f' block_counter: 2
+2022-06-04 01:29:29.763074 127.0.0.1 - received: '123
+' sent: 'code0005:f' block_counter: 3
+2022-06-04 01:30:09.092783 127.0.0.1 - received: 'no info ConnectionResetError' sent: 'code0012:a' block_counter: 4
+2022-06-04 01:30:17.924782 127.0.0.1 - received: 'signin
+' sent: 'code0005:f' block_counter: 1
+2022-06-04 01:30:17.939776 127.0.0.1 - received: 'nishaal
+' sent: 'code0005:f' block_counter: 2
+2022-06-04 01:30:17.943779 127.0.0.1 - received: '123
+' sent: 'code0005:f' block_counter: 3
+2022-06-04 01:30:58.240867 127.0.0.1 - received: 'no info ConnectionResetError' sent: 'code0012:a' block_counter: 4
+2022-06-04 01:31:07.689755 127.0.0.1 - received: 'signin
+' sent: 'code0005:f' block_counter: 1
+2022-06-04 01:31:07.702710 127.0.0.1 - received: 'nishaal
+' sent: 'code0005:f' block_counter: 2
+2022-06-04 01:31:07.707710 127.0.0.1 - received: '123
+' sent: 'code0005:f' block_counter: 3
+2022-06-04 01:41:15.640942 127.0.0.1 - received: 'no info ConnectionResetError' sent: 'code0012:a' block_counter: 1
+2022-06-04 01:43:50.993252 127.0.0.1 - received: 'no info ConnectionResetError' sent: 'code0012:a' block_counter: 1
+2022-06-04 01:49:59.003871 127.0.0.1 - received: 'no info ConnectionResetError' sent: 'code0012:a' block_counter: 1
+2022-06-04 01:57:27.275589 127.0.0.1 - received: 'no info ConnectionResetError' sent: 'code0012:a' block_counter: 1
+2022-06-04 01:59:30.243213 nishaal - received: 'new_game
+' sent: 'code0005:f' block_counter: 1
+2022-06-04 02:11:51.566613 127.0.0.1 - received: 'sign nishaal 123n' sent: 'code0005:f' block_counter: 1
+2022-06-04 02:11:57.552957 nishaal - received: '' sent: 'code0005:f' block_counter: 1

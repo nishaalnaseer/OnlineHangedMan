@@ -118,7 +118,7 @@ class Game:
 
         for letter in text:
             self.used_letters.append(letter)
-
+        # print(text)  # debug
         for index, char in enumerate(text):
             # there are two loops here, one smaller and a bigger one inside it
             # the smaller one checks if the letter is in the bigger loop to 
