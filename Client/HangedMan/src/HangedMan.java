@@ -1,14 +1,15 @@
 import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.WindowAdapter;
+import javax.swing.event.AncestorEvent;
+import javax.swing.event.AncestorListener;
+import javax.swing.plaf.synth.SynthDesktopIconUI;
+import java.awt.event.*;
 import java.io.*;
 
 public class HangedMan extends WindowAdapter implements ActionListener {
     // sections
-        // GUI
-        // connect() that connects to server
-        // processing functions
+    // GUI
+    // connect() that connects to server
+    // processing functions
 
     // GUI attributes
     private JFrame frame = new JFrame("Hanged Man");
@@ -83,6 +84,43 @@ public class HangedMan extends WindowAdapter implements ActionListener {
                 frame.add(new_port);
                 frame.add(new_addr);
 
+                new_ip.addMouseListener(new MouseAdapter() {
+                    @Override
+                    public void mouseClicked(MouseEvent e) {
+                        new_ip.setText("");
+                    }
+                });
+
+                new_port.addMouseListener(new MouseAdapter() {
+                    @Override
+                    public void mouseClicked(MouseEvent e) {
+                        new_port.setText("");
+                    }
+                });
+
+                new_addr.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        String ip_text = new_ip.getText();
+                        String port_text = new_port.getText();
+
+                        if ((ip_text == "") || (port_text == "") || (ip_text == null) || (port_text == null)
+                        || (ip_text.equals("New IP")) || (port_text.equals("New Port")))
+                        {
+
+                        } else {
+                            System.out.print(ip_text + "" + port_text);
+//                            port = Integer.parseInt(port_text);
+                            host_ip = ip_text;
+//                            try {
+////                                save_config();
+//                            } catch (IOException ex) {
+//                                // TODO handle exception through GUI
+//                            }
+                            connect_to_server.setText("Connect to " + host_ip + ":" + port);
+                        }
+                    }
+                });
             }
         });
     }
@@ -126,7 +164,6 @@ public class HangedMan extends WindowAdapter implements ActionListener {
         } catch (NumberFormatException e) {
             // TODO show error to GUI
         }
-
     }
 
     public void save_config() throws IOException {
