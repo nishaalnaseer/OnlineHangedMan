@@ -1,9 +1,8 @@
 import javax.swing.*;
-import javax.swing.event.AncestorEvent;
-import javax.swing.event.AncestorListener;
-import javax.swing.plaf.synth.SynthDesktopIconUI;
 import java.awt.event.*;
 import java.io.*;
+import java.net.Socket;
+import java.net.SocketException;
 
 public class HangedMan extends WindowAdapter implements ActionListener {
     // sections
@@ -14,19 +13,22 @@ public class HangedMan extends WindowAdapter implements ActionListener {
     // GUI attributes
     private JFrame frame = new JFrame("Hanged Man");
     private JTextField input;
-    private JLabel pic, score_label, level_label, tracker_label;
+    private final JLabel pic, score_label, level_label, tracker_label;
     private String tracker = "Letters entered = ";
     private String progress, last_word;
     private int count, level, score;
     private boolean signedin = false;
-    private JButton connect;
-    private JButton signin;
-    private JButton signup;
-    private JButton hi_sco;
+    private final JButton connect;
+    private final JButton signin;
+    private final JButton signup;
+    private final JButton hi_sco;
 
     // network attributes
     private String host_ip;
     private int port;
+    private Socket client;
+    private PrintWriter out;
+    private BufferedReader in;
 
     public HangedMan() throws Exception {
         pic = new JLabel();
@@ -104,23 +106,37 @@ public class HangedMan extends WindowAdapter implements ActionListener {
                         String ip_text = new_ip.getText();
                         String port_text = new_port.getText();
 
-                        if ((ip_text == "") || (port_text == "") || (ip_text == null) || (port_text == null)
-                        || (ip_text.equals("New IP")) || (port_text.equals("New Port")))
+                        if ((ip_text.equals("")) || (port_text.equals("")) || (ip_text.equals(null))
+                                || (port_text.equals(null)) || (ip_text.equals("New IP")) || (port_text.equals("New Port")))
                         {
 
                         } else {
-                            System.out.print(ip_text + "" + port_text);
-//                            port = Integer.parseInt(port_text);
-                            host_ip = ip_text;
-//                            try {
-////                                save_config();
-//                            } catch (IOException ex) {
-//                                // TODO handle exception through GUI
-//                            }
-                            connect_to_server.setText("Connect to " + host_ip + ":" + port);
+                            boolean ok = true;
+                            try {
+                                port = Integer.parseInt(port_text);
+                            } catch (NumberFormatException nfe) {
+                                ok = false;
+                                JOptionPane.showMessageDialog(frame, "Ivalid Characters in  Port Number");
+                            }
+                            if (ok == true) {
+                                host_ip = ip_text;
+                                try {
+                                    save_config();
+                                } catch (IOException ex) {
+
+                                }
+                                connect_to_server.setText("Connect to " + host_ip + ":" + port);
+                                server_conenct_func();
+                            }
                         }
                     }
                 });
+             connect_to_server.addActionListener(new ActionListener() {
+                 @Override
+                 public void actionPerformed(ActionEvent e) {
+                     server_conenct_func();
+                 }
+             });
             }
         });
     }
@@ -179,8 +195,19 @@ public class HangedMan extends WindowAdapter implements ActionListener {
 
     }
 
-    public static void main(String[] args) throws Exception{
-        HangedMan game = new HangedMan();
+    public void server_conenct_func() {
+        try {
+            client = new Socket(host_ip, port);
+            out = new PrintWriter(client.getOutputStream(), true);
+            in = new BufferedReader(new InputStreamReader(client.getInputStream()));
+        } catch (SocketException e) {
+            JOptionPane.showMessageDialog(frame, "Connection Error. Check ip:port or if host is up.");
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(frame, "IOException");
+        }
     }
 
+    public static void main(String[] args) throws Exception {
+        HangedMan game = new HangedMan();
+    }
 }
