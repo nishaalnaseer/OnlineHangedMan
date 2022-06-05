@@ -83,3 +83,16 @@
 ' sent: 'code0005:f' block_counter: 1
 2022-06-04 02:11:51.566613 127.0.0.1 - received: 'sign nishaal 123n' sent: 'code0005:f' block_counter: 1
 2022-06-04 02:11:57.552957 nishaal - received: '' sent: 'code0005:f' block_counter: 1
+2022-06-06 00:27:55.303254 127.0.0.1 - received: 'no info ConnectionResetError' sent: 'code0012:a' block_counter: 1
+2022-06-06 00:27:55.320257 127.0.0.1 - received: 'no info ConnectionResetError' sent: 'code0012:a' block_counter: 1
+2022-06-06 00:34:25.884567 127.0.0.1 - received: 'no info ConnectionResetError' sent: 'code0012:a' block_counter: 1
+2022-06-06 00:34:25.886567 127.0.0.1 - received: 'no info ConnectionResetError' sent: 'code0012:a' block_counter: 1
+2022-06-06 00:53:00.820517 127.0.0.1 - received: 'no info ConnectionResetError' sent: 'code0012:a' block_counter: 1
+2022-06-06 00:53:00.822523 127.0.0.1 - received: 'no info ConnectionResetError' sent: 'code0012:a' block_counter: 1
+2022-06-06 00:53:31.285819 127.0.0.1 - received: 'no info ConnectionResetError' sent: 'code0012:a' block_counter: 1
+2022-06-06 00:55:35.008593 127.0.0.1 - received: 'no info ConnectionResetError' sent: 'code0012:a' block_counter: 1
+2022-06-06 00:55:35.012596 127.0.0.1 - received: 'no info ConnectionResetError' sent: 'code0012:a' block_counter: 1
+2022-06-06 00:58:08.725752 127.0.0.1 - received: 'no info ConnectionResetError' sent: 'code0012:a' block_counter: 1
+2022-06-06 00:58:08.731751 127.0.0.1 - received: 'no info ConnectionResetError' sent: 'code0012:a' block_counter: 1
+2022-06-06 01:01:30.318884 127.0.0.1 - received: 'no info ConnectionResetError' sent: 'code0012:a' block_counter: 1
+2022-06-06 01:01:30.324884 127.0.0.1 - received: 'no info ConnectionResetError' sent: 'code0012:a' block_counter: 1

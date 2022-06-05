@@ -47,15 +47,12 @@ public class HangedMan extends WindowAdapter implements ActionListener {
 
         signin =new JButton("Signin");
         signin.setBounds(130,200,95,30);
-        frame.add(signin);
         signup = new JButton("Signin");
         signup.setBounds(275,200,95,30);
-        frame.add(signup);
         hi_sco = new JButton("High Scores");
         hi_sco.setBounds(185,150,130,30);
-        frame.add(hi_sco);
         connect = new JButton("Connect");
-        connect.setBounds(202,50,95,30);
+        connect.setBounds(202,185,95,30);
         frame.add(connect);
 
         frame.setLayout(null);
@@ -66,11 +63,6 @@ public class HangedMan extends WindowAdapter implements ActionListener {
             @Override
             public void actionPerformed(ActionEvent e) {
                 hide_all();
-                try {
-                    load_config();
-                } catch (IOException ex) {
-                    // TODO handle exception through pop window;
-                }
                 JButton connect_to_server = new JButton("Connect to " + host_ip + ":" + port);
                 connect_to_server.setBounds(150,150,200,30);
                 frame.add(connect_to_server);
@@ -85,6 +77,14 @@ public class HangedMan extends WindowAdapter implements ActionListener {
                 frame.add(new_ip);
                 frame.add(new_port);
                 frame.add(new_addr);
+
+                try {
+                    if (load_config() == false) {
+                        connect_to_server.setVisible(false);
+                    }
+                } catch (IOException ex) {
+                    // TODO handle exception through pop window;
+                }
 
                 new_ip.addMouseListener(new MouseAdapter() {
                     @Override
@@ -111,22 +111,16 @@ public class HangedMan extends WindowAdapter implements ActionListener {
                         {
 
                         } else {
-                            boolean ok = true;
-                            try {
-                                port = Integer.parseInt(port_text);
-                            } catch (NumberFormatException nfe) {
-                                ok = false;
-                                JOptionPane.showMessageDialog(frame, "Ivalid Characters in  Port Number");
-                            }
-                            if (ok == true) {
-                                host_ip = ip_text;
+                            final boolean addr_ok = check_ip_port(ip_text + ":" + port_text);
+
+                            if (addr_ok) {
                                 try {
                                     save_config();
                                 } catch (IOException ex) {
-
+                                    throw new RuntimeException(ex);
                                 }
                                 connect_to_server.setText("Connect to " + host_ip + ":" + port);
-                                server_conenct_func();
+                                server_connect_func();
                             }
                         }
                     }
@@ -134,7 +128,7 @@ public class HangedMan extends WindowAdapter implements ActionListener {
              connect_to_server.addActionListener(new ActionListener() {
                  @Override
                  public void actionPerformed(ActionEvent e) {
-                     server_conenct_func();
+                     server_connect_func();
                  }
              });
             }
@@ -152,42 +146,97 @@ public class HangedMan extends WindowAdapter implements ActionListener {
         hi_sco.setVisible(false);
     }
 
-    public void load_config() throws IOException {
+    public boolean load_config() throws IOException {
         File file = new File("src\\config");
         BufferedReader br = new BufferedReader(new FileReader(file));
-
-        String word = "";
         String line = br.readLine();
-        int line_len = line.length();
-        char ch;
-        int i = 0;
-        String[] content = new String[2];
-        for (int x = 0; x < line_len; x++) {
-            ch = line.charAt(x);
-
-            if ((ch == ',') || (ch == '\n')) {
-                content[i] = word;
-                i++;
-                word = "";
-            } else {
-                word = word + line.charAt(x);
-            }
+//        System.out.println(line);
+        if ((line == null) || (check_ip_port(line) == false)) {
+            JOptionPane.showMessageDialog(frame, "Corrupt save file");
+            return false;
         }
-        br.close();
-        host_ip = content[0];
-        try {
-            port = Integer.parseInt(content[1]);
-        } catch (NumberFormatException e) {
-            // TODO show error to GUI
-        }
+        return true;
     }
 
     public void save_config() throws IOException {
         File file = new File("src\\config");
 
         FileWriter wr = new FileWriter(file);
-        wr.write(host_ip + "," + port + ",");
+        wr.write(host_ip + ":" + port);
         wr.close();
+    }
+
+    public boolean check_ip_port(String ip_port) {
+        System.out.println(ip_port);
+        char ch;
+        int i;
+        int section_num = 0;
+        int str_len = ip_port.length();
+        String section = "";
+        int[] addr = new int[5];
+
+        for (i = 0; i < str_len; i++) {
+            ch = ip_port.charAt(i);
+            int section_val;
+
+            if ((ch == '.') || (ch == ':')) {
+
+                try {
+                    section_val = Integer.parseInt(section);
+                }
+                catch (NumberFormatException int_e) {
+                    JOptionPane.showMessageDialog(frame, "Invalid chars in IP");
+                    return false;
+                }
+
+                if ((section_val > 254) || (section_val < 0)) {
+                    JOptionPane.showMessageDialog(frame, "Invalid IP address!");
+                    return false;
+                }
+
+                addr[section_num] = section_val;
+                section_num++;
+                if (section_num > 4) {
+                    JOptionPane.showMessageDialog(frame, "Incorrect Format!");
+                    return false;
+                }
+                section = "";
+
+            } else {
+//                if (ch == ';') {
+//                    section = "";
+//                }
+                section += ch;
+
+                if (i == str_len-1) {
+                    try {
+                        section_val = Integer.parseInt(section);
+                    }
+                    catch (NumberFormatException int_e) {
+                        JOptionPane.showMessageDialog(frame, "Invalid chars in Port");
+                        return false;
+                    }
+
+                    if ((section_val < 0) || (section_val > 65535)) {
+                        JOptionPane.showMessageDialog(frame, "Invalid Port! Port must be between 0 and 65535");
+                        return false;
+                    }
+                    addr[section_num] = section_val;
+                }
+            }
+        }
+        if (section_num != 4) {
+            JOptionPane.showMessageDialog(frame, "Incorrect Format");
+            return false;
+        }
+
+        if ((addr[0] == 0) || (addr[3] == 0)) {
+            JOptionPane.showMessageDialog(frame, "Invalid IP address!");
+            return false;
+        }
+        host_ip = addr[0] + "." + addr[1] + "." + addr[2] + "." + addr[3];
+        port = addr[4];
+        return true;
     }
 
     @Override
@@ -195,15 +244,22 @@ public class HangedMan extends WindowAdapter implements ActionListener {
 
     }
 
-    public void server_conenct_func() {
+    public void server_connect_func() {
+        boolean ok = true;
+
         try {
             client = new Socket(host_ip, port);
             out = new PrintWriter(client.getOutputStream(), true);
             in = new BufferedReader(new InputStreamReader(client.getInputStream()));
         } catch (SocketException e) {
+            ok = false;
             JOptionPane.showMessageDialog(frame, "Connection Error. Check ip:port or if host is up.");
         } catch (IOException e) {
+            ok = false;
             JOptionPane.showMessageDialog(frame, "IOException");
+        }
+        if (ok == true) {
+            connect.setBounds(395,40,95,30);
         }
     }
 
