@@ -82,6 +82,9 @@ public class HangedMan extends WindowAdapter implements ActionListener {
                     if (load_config() == false) {
                         connect_to_server.setVisible(false);
                     }
+                    else {
+                        connect_to_server.setText("Connect to " + host_ip + ":" + port);
+                    }
                 } catch (IOException ex) {
                     // TODO handle exception through pop window;
                 }
@@ -125,12 +128,12 @@ public class HangedMan extends WindowAdapter implements ActionListener {
                         }
                     }
                 });
-             connect_to_server.addActionListener(new ActionListener() {
-                 @Override
-                 public void actionPerformed(ActionEvent e) {
-                     server_connect_func();
-                 }
-             });
+                connect_to_server.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        server_connect_func();
+                    }
+                });
             }
         });
     }
@@ -150,7 +153,6 @@ public class HangedMan extends WindowAdapter implements ActionListener {
         File file = new File("src\\config");
         BufferedReader br = new BufferedReader(new FileReader(file));
         String line = br.readLine();
-//        System.out.println(line);
         if ((line == null) || (check_ip_port(line) == false)) {
             JOptionPane.showMessageDialog(frame, "Corrupt save file");
             return false;
@@ -167,7 +169,6 @@ public class HangedMan extends WindowAdapter implements ActionListener {
     }
 
     public boolean check_ip_port(String ip_port) {
-        System.out.println(ip_port);
         char ch;
         int i;
         int section_num = 0;
@@ -264,6 +265,6 @@ public class HangedMan extends WindowAdapter implements ActionListener {
     }
 
     public static void main(String[] args) throws Exception {
-        HangedMan game = new HangedMan();
+        HangedMan Game = new HangedMan();
     }
 }
