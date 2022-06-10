@@ -9,10 +9,8 @@ code0002:f username not on file
 
 code0003:f username or password missing
 
-code0000:m no spaces in username or password allowed
 code0004:c client password wrong
 code0004:s sucessfully logged in
-code0004:p sucessfully signed up
 code0004:i insufficient args
 code0004:j too many args
 code0004:u username not on file
@@ -30,5 +28,10 @@ code0008:f incorrect number of args
 
 code0009:f invalid input
 
-code0010:g dead
-code0010:g player just died
+code0010:a player is dead
+code0010:g
+
+code0011:a player blocked
+
+code0012:a no info, attribute error
+

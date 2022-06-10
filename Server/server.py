@@ -314,7 +314,7 @@ class Instance:
         return "code0009:f"
 
     def dead(self, args=[]):
-        return "code0010:g"
+        return "code0010:a"
 
     def change_level(self, args):
         """function to check args and change level"""
@@ -392,7 +392,14 @@ if __name__ == "__main__":
     while True:
         client, addr = server.accept()
 
-        if addr[0] in blocked_ips:
-            continue
+        # if addr[0] in blocked_ips:
+        #     continue
+
+        # try:
+        #     client.send("ok".encode("utf-8"))
+        #     client.send("code0006:f\n".encode("utf-8"))
+        # except e:
+        #     print(e)
+        #     continue
 
         Instance(client, addr)
