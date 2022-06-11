@@ -214,7 +214,7 @@ class Instance:
             with open("hi-scos.json", 'r') as f:
                 scores = json.load(f)
             self.hi_sco = scores[userName]
-            return f"code0004:s {self.game.progress} {self.hi_sco}"# sucessfully logged in
+            return f"code0004:s {self.game.progress} {self.game.score} {self.hi_sco} {self.game.count} {self.game.level}"# sucessfully logged in
 
     def print_args(self, args):
         statement = f"Recieved from {self.id}: "

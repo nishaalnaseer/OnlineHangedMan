@@ -1,6 +1,7 @@
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 import java.net.Socket;
@@ -20,16 +21,19 @@ public class HangedMan extends WindowAdapter implements ActionListener {
     // GUI attributes
     private final JFrame frame = new JFrame("Hanged Man");
     private JTextField input;
-    private final JLabel pic, score_label, level_label, tracker_label;
+    private final JLabel pic, score_label, level_label, tracker_label, hi_sco_label;
     private String tracker = "Letters entered = ";
-    private String progress, last_word;
-    private int count, level, score;
+    private String progress, last_word, hi_sco;
+    private String level, score;
+    private int count;
     private boolean signedin = false;
     private final JButton connect;
     private final JButton signin;
     private final JButton signup;
-    private final JButton hi_sco;
+    private final JLabel info;
+    private final JButton hi_sco_button;
     private final String img_path = "src\\img\\img";
+    private final JButton change_level;
 
     // network attributes
     private String host_ip;
@@ -41,28 +45,43 @@ public class HangedMan extends WindowAdapter implements ActionListener {
 
     public HangedMan() {
         pic = new JLabel();
-        score_label = new JLabel();
-        level_label = new JLabel();
-        tracker_label = new JLabel();
+        score_label = new JLabel("Your score: " + score);
+        level_label = new JLabel("Your level: " + level);
+        tracker_label = new JLabel("Letters you have entered: ");
+        hi_sco_label = new JLabel("High score: " + hi_sco);
         frame.setSize(500, 400);
-        score_label.setBounds(230,0,150,20);
-        level_label.setBounds(432,0,150,20);
-        tracker_label.setBounds(80,340,200,20);
+        hi_sco_label.setBounds(200, 0, 150,20);
+        score_label.setBounds(410,25,150,20);
+        level_label.setBounds(420,0,150,20);
+        tracker_label.setBounds(10,340,200,20);
         pic.setBounds(10, 10, 500, 218);
         frame.add(level_label);
+        frame.add(hi_sco_label);
+        hi_sco_label.setVisible(false);
         frame.add(pic);
         frame.add(score_label);
         frame.add(tracker_label);
+        info = new JLabel("Signing or signup and signin");
+        info.setBounds(170,100,190,50);
+        frame.add(info);
+        info.setVisible(false);
+        Font f = new Font("comic-sans", Font.BOLD, 30);
+        pic.setFont(f);
+        change_level = new JButton("Change Level");
+        frame.add(change_level);
+        change_level.setVisible(false);
+        change_level.setBounds(330, 330, 150, 30);
 
-        signin =new JButton("Signin");
+        signin = new JButton("Signin");
         signin.setBounds(130,200,95,30);
         signup = new JButton("Signin");
         signup.setBounds(275,200,95,30);
-        hi_sco = new JButton("High Scores");
-        hi_sco.setBounds(185,150,130,30);
+        hi_sco_button = new JButton("High Scores");
+        hi_sco_button.setBounds(185,150,130,30);
         connect = new JButton("Connect");
         connect.setBounds(202,185,95,30);
         frame.add(connect);
+        hide_all();
 
         frame.setLayout(null);
         frame.setResizable(false);
@@ -72,6 +91,8 @@ public class HangedMan extends WindowAdapter implements ActionListener {
             @Override
             public void actionPerformed(ActionEvent e) {
                 hide_all();
+                connect.setVisible(false);
+                frame.remove(connect);
                 JButton connect_to_server = new JButton("Connect to " + host_ip + ":" + port);
                 connect_to_server.setBounds(150,150,200,30);
                 frame.add(connect_to_server);
@@ -139,6 +160,7 @@ public class HangedMan extends WindowAdapter implements ActionListener {
                                     new_ip.setVisible(false);
                                     new_port.setVisible(false);
                                     connect_to_server.setVisible(false);
+
                                     signin_screen();
                                 }
                             }
@@ -233,6 +255,7 @@ public class HangedMan extends WindowAdapter implements ActionListener {
     }
 
     private void signin_screen() {
+        info.setVisible(true);
         JButton signin_to_server = new JButton("Signin");
         signin_to_server.setBounds(300, 185, 80, 30);
         JButton signup_to_server = new JButton("Signup");
@@ -246,10 +269,6 @@ public class HangedMan extends WindowAdapter implements ActionListener {
         signup_user_name_label.setBounds(125, 225, 80, 30);
         JPasswordField signup_password = new JPasswordField("password");
         signup_password.setBounds(210, 225, 80, 30);
-        JLabel info = new JLabel("Signin or Signup and Signin");
-        info.setBounds(150, 50, 150, 30);
-        frame.add(info);
-
         signin_user_name_label.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -299,12 +318,22 @@ public class HangedMan extends WindowAdapter implements ActionListener {
                         } catch (IOException ex) {
                             throw new RuntimeException(ex);
                         }
+
                         signin_to_server.setVisible(false);
                         signup_to_server.setVisible(false);
                         signin_user_name_label.setVisible(false);
                         signin_password.setVisible(false);
                         signup_user_name_label.setVisible(false);
                         signup_password.setVisible(false);
+                        info.setVisible(false);
+
+                        frame.remove(signin_to_server);
+                        frame.remove(signup_to_server);
+                        frame.remove(signin_user_name_label);
+                        frame.remove(signin_password);
+                        frame.remove(signup_user_name_label);
+                        frame.remove(signup_password);
+                        frame.remove(info);
                         game_screen();
                     }
                 }
@@ -332,7 +361,6 @@ public class HangedMan extends WindowAdapter implements ActionListener {
                 }
             }
         });
-
         frame.add(signin_to_server);
         frame.add(signup_to_server);
         frame.add(signin_user_name_label);
@@ -342,17 +370,40 @@ public class HangedMan extends WindowAdapter implements ActionListener {
     }
 
     private void game_screen() {
+        level = game_args[5];
+        score = game_args[2];
+        hi_sco = game_args[3];
+        count = Integer.parseInt(game_args[4]);
+        progress = game_args[1];
 
+        level_label.setText("Level: " + level);
+        score_label.setText("Score: " + score);
+        hi_sco_label.setText("High Score: " + hi_sco);
+        ImageIcon icon = new ImageIcon(img_path + count + ".png");
+        pic.setText(progress);
+        pic.setIcon(icon);
+
+        level_label.setVisible(true);
+        score_label.setVisible(true);
+        tracker_label.setVisible(true);
+        hi_sco_button.setVisible(true);
+        pic.setVisible(true);
+        hi_sco_label.setVisible(true);
+        change_level.setVisible(true);
+
+        change_level.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String desired_level = JOptionPane.showInputDialog(frame,"Enter your desired level. Max level is 11 and minimum is 1");
+            }
+        });
     }
     private void hide_all() {
-        connect.setVisible(false);
         pic.setVisible(false);
         level_label.setVisible(false);
         score_label.setVisible(false);
         tracker_label.setVisible(false);
-        signin.setVisible(false);
-        signup.setVisible(false);
-        hi_sco.setVisible(false);
+        hi_sco_button.setVisible(false);
     }
 
     private boolean checker(String str) {
