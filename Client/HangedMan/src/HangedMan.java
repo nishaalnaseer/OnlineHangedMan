@@ -1,4 +1,4 @@
-import org.jetbrains.annotations.NotNull;
+//import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
@@ -34,6 +34,9 @@ public class HangedMan extends WindowAdapter implements ActionListener {
     private final JButton hi_sco_button;
     private final String img_path = "src\\img\\img";
     private final JButton change_level;
+    private final JButton submit;
+    private final JTextField letters;
+    private final JButton new_game;
 
     // network attributes
     private String host_ip;
@@ -46,7 +49,7 @@ public class HangedMan extends WindowAdapter implements ActionListener {
     public HangedMan() {
         pic = new JLabel();
         score_label = new JLabel("Your score: " + score);
-        level_label = new JLabel("Your level: " + level);
+        level_label = new JLabel("Next level: " + level);
         tracker_label = new JLabel("Letters you have entered: ");
         hi_sco_label = new JLabel("High score: " + hi_sco);
         frame.setSize(500, 400);
@@ -81,6 +84,27 @@ public class HangedMan extends WindowAdapter implements ActionListener {
         connect = new JButton("Connect");
         connect.setBounds(202,185,95,30);
         frame.add(connect);
+        submit = new JButton("Submit");
+        letters = new JTextField("Letters");
+        submit.setBounds(290,290,75,20);
+        letters.setBounds(135,290,150,20);
+        new_game = new JButton("New Game");
+        new_game.setBounds(202,185,95,30);
+        frame.add(new_game);
+        new_game.setVisible(false);
+        new_game.setBounds(0, 240, 105, 30);
+        frame.add(submit);
+        frame.add(letters);
+        submit.setVisible(false);
+        letters.setVisible(false);
+        letters.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (letters.getText().equals("Letters")) {
+                    letters.setText("");
+                }
+            }
+        });
         hide_all();
 
         frame.setLayout(null);
@@ -132,7 +156,7 @@ public class HangedMan extends WindowAdapter implements ActionListener {
                         new_port.setText("");
                     }
                 });
-
+                new_addr.setVisible(true);
                 new_addr.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
@@ -184,6 +208,51 @@ public class HangedMan extends WindowAdapter implements ActionListener {
                 });
             }
         });
+    }
+
+    private void update_display() {
+        level_label.setText("Level: " + level);
+        score_label.setText("Score: " + score);
+        hi_sco_label.setText("High Score: " + hi_sco);
+        ImageIcon icon = new ImageIcon(img_path + count + ".png");
+        pic.setText(progress);
+        pic.setIcon(icon);
+    }
+
+    private void after_submitting() {
+        String function = game_args[0];
+
+        switch (function) {
+            case "update":
+                progress = game_args[1];
+                count = Integer.parseInt(game_args[2]);
+                score = game_args[3];
+
+            case "nextword":
+                progress  = game_args[1];
+                last_word = game_args[2];
+                score = game_args[3];
+                tracker = "Letters entered = ";
+                if (Integer.parseInt(score) > Integer.parseInt(hi_sco)) {
+                    hi_sco = score;
+                }
+                hi_sco_label.setText("High score: " + hi_sco);
+                tracker_label.setText(tracker);
+
+            case "code0010:a":
+                count = 7;
+                submit.setVisible(false);
+                letters.setVisible(false);
+                change_level.setVisible(false);
+
+            case "new_game":
+                count = 0;
+                change_level.setVisible(true);
+                submit.setVisible(true);
+                letters.setVisible(true);
+                tracker = "Letters entered = ";
+        }
+        update_display();
     }
 
     private boolean decorder(String from_server) {
@@ -369,6 +438,12 @@ public class HangedMan extends WindowAdapter implements ActionListener {
         frame.add(signup_password);
     }
 
+    private void key_pressed(KeyEvent e) {
+        if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+            submit.doClick();
+        }
+    }
+
     private void game_screen() {
         level = game_args[5];
         score = game_args[2];
@@ -376,12 +451,29 @@ public class HangedMan extends WindowAdapter implements ActionListener {
         count = Integer.parseInt(game_args[4]);
         progress = game_args[1];
 
-        level_label.setText("Level: " + level);
-        score_label.setText("Score: " + score);
-        hi_sco_label.setText("High Score: " + hi_sco);
-        ImageIcon icon = new ImageIcon(img_path + count + ".png");
-        pic.setText(progress);
-        pic.setIcon(icon);
+        submit.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (!(letters.getText().equals("Letters"))) {
+                    String letters_formatted = (letters.getText()).replace(" ", "");
+
+                    for (int x = 0; x < letters_formatted.length(); x++) {
+                        char ch = letters_formatted.charAt(x);
+                        tracker += " '" + ch + "'";
+                    }
+
+                    out.println("submit " + letters_formatted);
+                    try {
+                        String from_server = in.readLine();
+                        System.out.println(from_server);
+                        game_args = from_server.split(" ");
+                        after_submitting();
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            }
+        });
 
         level_label.setVisible(true);
         score_label.setVisible(true);
@@ -390,13 +482,27 @@ public class HangedMan extends WindowAdapter implements ActionListener {
         pic.setVisible(true);
         hi_sco_label.setVisible(true);
         change_level.setVisible(true);
+        submit.setVisible(true);
+        letters.setVisible(true);
+        new_game.setVisible(true);
+        
+        new_game.add
 
         change_level.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 String desired_level = JOptionPane.showInputDialog(frame,"Enter your desired level. Max level is 11 and minimum is 1");
+                out.println("level " + desired_level);
+                try {
+                    String from_server = in.readLine();
+                    String[] args = from_server.split(" ");
+                    JOptionPane.showMessageDialog(frame, "Level will be changed to " + args[1] + " after this word.");
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
             }
         });
+        update_display();
     }
     private void hide_all() {
         pic.setVisible(false);
