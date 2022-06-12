@@ -20,12 +20,11 @@ public class HangedMan extends WindowAdapter implements ActionListener {
 
     // GUI attributes
     private final JFrame frame = new JFrame("Hanged Man");
-    private JTextField input;
     private final JLabel pic, score_label, level_label, tracker_label, hi_sco_label;
     private String tracker = "Letters entered = ";
     private String progress, last_word, hi_sco;
     private String level, score;
-    private int count;
+    private volatile int count;
     private boolean signedin = false;
     private final JButton connect;
     private final JButton signin;
@@ -97,6 +96,21 @@ public class HangedMan extends WindowAdapter implements ActionListener {
         frame.add(letters);
         submit.setVisible(false);
         letters.setVisible(false);
+        
+        new_game.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                out.println("new_game");
+                try {
+                    game_args = (in.readLine()).split(" ");
+                    server_to_functions();
+                } catch (IOException ex) {
+                    JOptionPane.showMessageDialog(frame,"Comm Error " + ex);
+                }
+
+                
+            }
+        });
         letters.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -133,14 +147,14 @@ public class HangedMan extends WindowAdapter implements ActionListener {
                 frame.add(new_addr);
 
                 try {
-                    if (load_config() == false) {
+                    if (!load_config()) {
                         connect_to_server.setVisible(false);
                     }
                     else {
                         connect_to_server.setText("Connect to " + host_ip + ":" + port);
                     }
                 } catch (IOException ex) {
-
+                    // empty
                 }
 
                 new_ip.addMouseListener(new MouseAdapter() {
@@ -166,7 +180,7 @@ public class HangedMan extends WindowAdapter implements ActionListener {
                         if ((ip_text.equals("")) || (port_text.equals("")) || (ip_text.equals(null))
                                 || (port_text.equals(null)) || (ip_text.equals("New IP")) || (port_text.equals("New Port")))
                         {
-
+                            JOptionPane.showMessageDialog(frame, "Error, probably in config file");
                         } else {
                             final boolean addr_ok = check_ip_port(ip_text + ":" + port_text);
 
@@ -214,43 +228,78 @@ public class HangedMan extends WindowAdapter implements ActionListener {
         level_label.setText("Level: " + level);
         score_label.setText("Score: " + score);
         hi_sco_label.setText("High Score: " + hi_sco);
+        System.out.println("count at display " + count);
         ImageIcon icon = new ImageIcon(img_path + count + ".png");
-        pic.setText(progress);
+        tracker_label.setText(tracker);
+        System.out.println(tracker);
         pic.setIcon(icon);
+        pic.setText(progress);
     }
 
-    private void after_submitting() {
+    private void update() {
+        progress = game_args[1];
+        count = Integer.parseInt(game_args[2]);
+        System.out.println("Count at case " + count);
+        score = game_args[3];
+    }
+
+    private void nextword() {
+        progress  = game_args[1];
+        last_word = game_args[2];
+        score = game_args[3];
+        count = 0;
+        tracker = "Letters entered = ";
+        if (Integer.parseInt(score) > Integer.parseInt(hi_sco)) {
+            hi_sco = score;
+        }
+        hi_sco_label.setText("High score: " + hi_sco);
+        tracker_label.setText(tracker);
+    }
+
+    private void dead() {
+        count = 7;
+        submit.setVisible(false);
+        letters.setVisible(false);
+        change_level.setVisible(false);
+    }
+
+    private void new_game_function() {
+        count = 0;
+        progress = game_args[1];
+        tracker = "Letters entered = ";
+        score = "0";
+
+        change_level.setVisible(true);
+        submit.setVisible(true);
+        letters.setVisible(true);
+        tracker = "Letters entered = ";
+    }
+    private void server_to_functions() {
         String function = game_args[0];
 
         switch (function) {
             case "update":
-                progress = game_args[1];
-                count = Integer.parseInt(game_args[2]);
-                score = game_args[3];
+                update();
+                break;
 
             case "nextword":
-                progress  = game_args[1];
-                last_word = game_args[2];
-                score = game_args[3];
-                tracker = "Letters entered = ";
-                if (Integer.parseInt(score) > Integer.parseInt(hi_sco)) {
-                    hi_sco = score;
-                }
-                hi_sco_label.setText("High score: " + hi_sco);
-                tracker_label.setText(tracker);
+                nextword();
+                break;
 
             case "code0010:a":
-                count = 7;
-                submit.setVisible(false);
-                letters.setVisible(false);
-                change_level.setVisible(false);
+                dead();
+                break;
 
             case "new_game":
-                count = 0;
-                change_level.setVisible(true);
-                submit.setVisible(true);
-                letters.setVisible(true);
-                tracker = "Letters entered = ";
+                new_game_function();
+                break;
+
+            case "code0004:s":
+                game_screen();
+                break;
+
+            default:
+                JOptionPane.showMessageDialog(frame, "Unknown response: " + function);
         }
         update_display();
     }
@@ -454,6 +503,7 @@ public class HangedMan extends WindowAdapter implements ActionListener {
         submit.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+
                 if (!(letters.getText().equals("Letters"))) {
                     String letters_formatted = (letters.getText()).replace(" ", "");
 
@@ -467,7 +517,7 @@ public class HangedMan extends WindowAdapter implements ActionListener {
                         String from_server = in.readLine();
                         System.out.println(from_server);
                         game_args = from_server.split(" ");
-                        after_submitting();
+                        server_to_functions();
                     } catch (IOException ex) {
                         ex.printStackTrace();
                     }
@@ -485,8 +535,8 @@ public class HangedMan extends WindowAdapter implements ActionListener {
         submit.setVisible(true);
         letters.setVisible(true);
         new_game.setVisible(true);
-        
-        new_game.add
+
+        new_game.setVisible(true);
 
         change_level.addActionListener(new ActionListener() {
             @Override
@@ -554,7 +604,7 @@ public class HangedMan extends WindowAdapter implements ActionListener {
         File file = new File("src\\config");
         BufferedReader br = new BufferedReader(new FileReader(file));
         String line = br.readLine();
-        if ((line == null) || (check_ip_port(line) == false)) {
+        if ((line == null) || (!check_ip_port(line))) {
             JOptionPane.showMessageDialog(frame, "Corrupt save file");
             return false;
         }
@@ -563,7 +613,7 @@ public class HangedMan extends WindowAdapter implements ActionListener {
         BufferedReader us = new BufferedReader(new FileReader(us_file));
         String password_and_username = us.readLine();
         String[] user_info = password_and_username.split(":");
-        
+
         if (user_info.length != 2) {
             JOptionPane.showMessageDialog(frame, "Corrupt save file");
             saved_username = "username";
