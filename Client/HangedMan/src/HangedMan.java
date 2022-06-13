@@ -96,7 +96,7 @@ public class HangedMan extends WindowAdapter implements ActionListener {
         frame.add(letters);
         submit.setVisible(false);
         letters.setVisible(false);
-        
+
         new_game.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -108,7 +108,7 @@ public class HangedMan extends WindowAdapter implements ActionListener {
                     JOptionPane.showMessageDialog(frame,"Comm Error " + ex);
                 }
 
-                
+
             }
         });
         letters.addMouseListener(new MouseAdapter() {
@@ -710,6 +710,60 @@ public class HangedMan extends WindowAdapter implements ActionListener {
         host_ip = addr[0] + "." + addr[1] + "." + addr[2] + "." + addr[3];
         port = addr[4];
         return true;
+    }
+
+    private void organise_display_hi_scos(String from_server) {
+        String[] from_server_split = from_server.split(" ");
+        int from_server_len = from_server_split.length;
+        int final_arrays_len = Integer.parseInt(from_server_split[from_server_len-1]);
+        String[] names = new String[final_arrays_len];
+        String[] hi_scos = new String[final_arrays_len];
+
+        for (int x = 1; x < final_arrays_len+1; x++) {
+            names[x-1] = from_server_split[x];
+            hi_scos[x-1] = from_server_split[x+final_arrays_len];
+        }
+
+    }
+
+    private void send_high_scores_req() {
+        tracker_label.setVisible(false);
+        pic.setVisible(false);
+        new_game.setVisible(false);
+        hi_sco_label.setVisible(false);
+        level_label.setVisible(false);
+        score_label.setVisible(false);
+        letters.setVisible(false);
+        submit.setVisible(false);
+        change_level.setVisible(false);
+
+        JButton back = new JButton("Back");
+        back.setBounds(0,0, 50, 30);
+        frame.add(back);
+        back.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                back.setVisible(false);
+                tracker_label.setVisible(true);
+                pic.setVisible(true);
+                new_game.setVisible(true);
+                hi_sco_label.setVisible(true);
+                level_label.setVisible(true);
+                score_label.setVisible(true);
+                letters.setVisible(true);
+                submit.setVisible(true);
+                change_level.setVisible(true);
+            }
+        });
+
+        out.println("hi_scos");
+
+        try {
+            String from_server = in.readLine();
+            organise_display_hi_scos(from_server);
+        } catch (IOException error) {
+            JOptionPane.showMessageDialog(frame, "Unknown Error " + error);
+        }
     }
 
     @Override
