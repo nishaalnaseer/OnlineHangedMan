@@ -349,11 +349,17 @@ class Instance:
         with open("hi-scos.json", 'r') as f:
             scores = json.load(f)
 
-        response = "scores "
-        for k, v in scores.items():
-            response += f"{k} {v} "
+        response = ""
+        k_len = len(scores.keys())
+        k_len = sorted(k_len)[::-1]
 
-        return response
+        for key in scores.keys():
+            response += f" {key}"
+
+        for key in scores.keys():
+            response += f" {scores[key]}"
+
+        return f"scores {response} {k_len}"
 
     def blocker(self, code, info):
         self.block_counter += 1
