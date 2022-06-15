@@ -740,7 +740,7 @@ public class HangedMan extends WindowAdapter implements ActionListener {
         JTable table = new JTable(scos, header);
         table.setBounds(30, 40, 200, 300);
         JScrollPane scrolling = new JScrollPane(table);
-        table.add(scrolling);
+//        table.add(scrolling);
         frame.add(table);
 
         JButton back = new JButton("Back");

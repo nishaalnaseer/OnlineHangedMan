@@ -1,6 +1,7 @@
 import socket
 
 ip, port = "172.104.181.124", 65000
+ip = "127.0.0.1"
 
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client.connect((ip, port))

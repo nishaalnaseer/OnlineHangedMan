@@ -349,11 +349,16 @@ class Instance:
         with open("hi-scos.json", 'r') as f:
             scores = json.load(f)
 
-        response = ""
+        keys_to_send = ""
+        values_to_send = ""
         k_len = len(scores.keys())
-        data = dict(sorted(scores.items(), key=lambda items: item[1]))
+        data = dict(sorted(scores.items(), key=lambda items : items[1]))
 
-        return f"scores {response} {k_len}"
+        for k, v in data.items():
+            keys_to_send += f"{k} "
+            values_to_send += f"{v} "
+
+        return f"scores {keys_to_send}{values_to_send}{k_len}"
 
     def blocker(self, code, info):
         self.block_counter += 1
