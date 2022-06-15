@@ -79,7 +79,7 @@ public class HangedMan extends WindowAdapter implements ActionListener {
         signup = new JButton("Signin");
         signup.setBounds(275,200,95,30);
         hi_sco_button = new JButton("High Scores");
-        hi_sco_button.setBounds(185,150,130,30);
+        hi_sco_button.setBounds(0,280,120,25);
         connect = new JButton("Connect");
         connect.setBounds(202,185,95,30);
         frame.add(connect);
@@ -88,12 +88,12 @@ public class HangedMan extends WindowAdapter implements ActionListener {
         submit.setBounds(290,290,75,20);
         letters.setBounds(135,290,150,20);
         new_game = new JButton("New Game");
-        new_game.setBounds(202,185,95,30);
+        new_game.setBounds(0, 240, 105, 30);
         frame.add(new_game);
         new_game.setVisible(false);
-        new_game.setBounds(0, 240, 105, 30);
         frame.add(submit);
         frame.add(letters);
+        frame.add(hi_sco_button);
         submit.setVisible(false);
         letters.setVisible(false);
 
@@ -525,6 +525,13 @@ public class HangedMan extends WindowAdapter implements ActionListener {
             }
         });
 
+        hi_sco_button.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                send_high_scores_req();
+            }
+        });
+
         level_label.setVisible(true);
         score_label.setVisible(true);
         tracker_label.setVisible(true);
@@ -723,7 +730,39 @@ public class HangedMan extends WindowAdapter implements ActionListener {
             names[x-1] = from_server_split[x];
             hi_scos[x-1] = from_server_split[x+final_arrays_len];
         }
+        String[][] scos = new String[final_arrays_len][2];
 
+        for (int x = 0; x < final_arrays_len; x++) {
+            String[] data = {names[x], hi_scos[x]};
+            scos[x] = data;
+        }
+        String[] header = {"Name, High Score"};
+        JTable table = new JTable(scos, header);
+        table.setBounds(30, 40, 200, 300);
+        JScrollPane scrolling = new JScrollPane(table);
+        table.add(scrolling);
+        frame.add(table);
+
+        JButton back = new JButton("Back");
+        back.setBounds(5,5,50,30);
+        back.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                frame.remove(scrolling);
+                table.remove(scrolling);
+                back.setVisible(false);
+                tracker_label.setVisible(true);
+                pic.setVisible(true);
+                new_game.setVisible(true);
+                hi_sco_label.setVisible(true);
+                level_label.setVisible(true);
+                score_label.setVisible(true);
+                letters.setVisible(true);
+                submit.setVisible(true);
+                change_level.setVisible(true);
+                game_screen();
+            }
+        });
     }
 
     private void send_high_scores_req() {
@@ -736,25 +775,6 @@ public class HangedMan extends WindowAdapter implements ActionListener {
         letters.setVisible(false);
         submit.setVisible(false);
         change_level.setVisible(false);
-
-        JButton back = new JButton("Back");
-        back.setBounds(0,0, 50, 30);
-        frame.add(back);
-        back.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                back.setVisible(false);
-                tracker_label.setVisible(true);
-                pic.setVisible(true);
-                new_game.setVisible(true);
-                hi_sco_label.setVisible(true);
-                level_label.setVisible(true);
-                score_label.setVisible(true);
-                letters.setVisible(true);
-                submit.setVisible(true);
-                change_level.setVisible(true);
-            }
-        });
 
         out.println("hi_scos");
 

@@ -351,13 +351,7 @@ class Instance:
 
         response = ""
         k_len = len(scores.keys())
-        k_len = sorted(k_len)[::-1]
-
-        for key in scores.keys():
-            response += f" {key}"
-
-        for key in scores.keys():
-            response += f" {scores[key]}"
+        data = dict(sorted(scores.items(), key=lambda items: item[1]))
 
         return f"scores {response} {k_len}"
 
