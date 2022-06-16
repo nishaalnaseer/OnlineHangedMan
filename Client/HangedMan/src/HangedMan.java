@@ -36,6 +36,8 @@ public class HangedMan extends WindowAdapter implements ActionListener {
     private final JButton submit;
     private final JTextField letters;
     private final JButton new_game;
+    private final JTable table;
+    private final JButton back;
 
     // network attributes
     private String host_ip;
@@ -107,8 +109,6 @@ public class HangedMan extends WindowAdapter implements ActionListener {
                 } catch (IOException ex) {
                     JOptionPane.showMessageDialog(frame,"Comm Error " + ex);
                 }
-
-
             }
         });
         letters.addMouseListener(new MouseAdapter() {
@@ -222,16 +222,27 @@ public class HangedMan extends WindowAdapter implements ActionListener {
                 });
             }
         });
+
+        String[] header = {"Name, High Score"};
+        table = new JTable();
+        table.setBounds(30, 40, 200, 300);
+        JScrollPane scrolling = new JScrollPane(table);
+//        table.add(scrolling);
+        frame.add(table);
+
+        back = new JButton("Back");
+        back.setBounds(5,5,75,20);
+        frame.add(back);
+        back.setVisible(false);
+        table.setVisible(false);
     }
 
     private void update_display() {
         level_label.setText("Level: " + level);
         score_label.setText("Score: " + score);
         hi_sco_label.setText("High Score: " + hi_sco);
-        System.out.println("count at display " + count);
         ImageIcon icon = new ImageIcon(img_path + count + ".png");
         tracker_label.setText(tracker);
-        System.out.println(tracker);
         pic.setIcon(icon);
         pic.setText(progress);
     }
@@ -239,7 +250,6 @@ public class HangedMan extends WindowAdapter implements ActionListener {
     private void update() {
         progress = game_args[1];
         count = Integer.parseInt(game_args[2]);
-        System.out.println("Count at case " + count);
         score = game_args[3];
     }
 
@@ -266,14 +276,21 @@ public class HangedMan extends WindowAdapter implements ActionListener {
     private void new_game_function() {
         count = 0;
         progress = game_args[1];
-        tracker = "Letters entered = ";
         score = "0";
-
         change_level.setVisible(true);
         submit.setVisible(true);
         letters.setVisible(true);
         tracker = "Letters entered = ";
     }
+
+    private void after_signin_function() {
+        level = game_args[5];
+        score = game_args[2];
+        hi_sco = game_args[3];
+        count = Integer.parseInt(game_args[4]);
+        progress = game_args[1];
+    }
+
     private void server_to_functions() {
         String function = game_args[0];
 
@@ -295,7 +312,7 @@ public class HangedMan extends WindowAdapter implements ActionListener {
                 break;
 
             case "code0004:s":
-                game_screen();
+                after_signin_function();
                 break;
 
             default:
@@ -425,7 +442,6 @@ public class HangedMan extends WindowAdapter implements ActionListener {
                     try {
                         String from_server = in.readLine();
                         signedin = decorder(from_server);
-                        System.out.println(from_server);
                     } catch (IOException ex) {
                         throw new RuntimeException(ex);
                     }
@@ -472,7 +488,6 @@ public class HangedMan extends WindowAdapter implements ActionListener {
                     try {
                         String from_server = in.readLine();
                         decorder(from_server);
-                        System.out.println(from_server);
                     } catch (IOException ex) {
                         throw new RuntimeException(ex);
                     }
@@ -494,11 +509,7 @@ public class HangedMan extends WindowAdapter implements ActionListener {
     }
 
     private void game_screen() {
-        level = game_args[5];
-        score = game_args[2];
-        hi_sco = game_args[3];
-        count = Integer.parseInt(game_args[4]);
-        progress = game_args[1];
+        server_to_functions();
 
         submit.addActionListener(new ActionListener() {
             @Override
@@ -515,7 +526,6 @@ public class HangedMan extends WindowAdapter implements ActionListener {
                     out.println("submit " + letters_formatted);
                     try {
                         String from_server = in.readLine();
-                        System.out.println(from_server);
                         game_args = from_server.split(" ");
                         server_to_functions();
                     } catch (IOException ex) {
@@ -528,6 +538,7 @@ public class HangedMan extends WindowAdapter implements ActionListener {
         hi_sco_button.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                back.setVisible(true);
                 send_high_scores_req();
             }
         });
@@ -535,14 +546,13 @@ public class HangedMan extends WindowAdapter implements ActionListener {
         level_label.setVisible(true);
         score_label.setVisible(true);
         tracker_label.setVisible(true);
-        hi_sco_button.setVisible(true);
+        hi_sco_button.setVisible(true);;
         pic.setVisible(true);
         hi_sco_label.setVisible(true);
         change_level.setVisible(true);
         submit.setVisible(true);
         letters.setVisible(true);
         new_game.setVisible(true);
-
         new_game.setVisible(true);
 
         change_level.addActionListener(new ActionListener() {
@@ -736,20 +746,11 @@ public class HangedMan extends WindowAdapter implements ActionListener {
             String[] data = {names[x], hi_scos[x]};
             scos[x] = data;
         }
-        String[] header = {"Name, High Score"};
-        JTable table = new JTable(scos, header);
-        table.setBounds(30, 40, 200, 300);
-        JScrollPane scrolling = new JScrollPane(table);
-//        table.add(scrolling);
-        frame.add(table);
+        table.setV
 
-        JButton back = new JButton("Back");
-        back.setBounds(5,5,50,30);
         back.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                frame.remove(scrolling);
-                table.remove(scrolling);
                 back.setVisible(false);
                 tracker_label.setVisible(true);
                 pic.setVisible(true);
@@ -760,9 +761,11 @@ public class HangedMan extends WindowAdapter implements ActionListener {
                 letters.setVisible(true);
                 submit.setVisible(true);
                 change_level.setVisible(true);
+                table.setVisible(false);
                 game_screen();
             }
         });
+
     }
 
     private void send_high_scores_req() {
@@ -775,6 +778,7 @@ public class HangedMan extends WindowAdapter implements ActionListener {
         letters.setVisible(false);
         submit.setVisible(false);
         change_level.setVisible(false);
+        hi_sco_button.setVisible(false);
 
         out.println("hi_scos");
 
