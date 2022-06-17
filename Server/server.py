@@ -107,8 +107,11 @@ class Instance:
             except IndexError:
                 # incase user send message without any letters
                 self.blocker(code="code0006:f", info=info)
-
-                self.client.send("code0006:f\n".encode("utf-8"))
+                try:
+                    self.client.send("code0006:f\n".encode("utf-8"))
+                except ConnectionAbortedError:
+                    print(self.id + " has likely closed the app.")
+                    break
                 # self.print_response("code0006:f", "code0006:f")
                 if self.block_counter == 5 or self.big_block_counter == 100:
                     break
@@ -199,8 +202,8 @@ class Instance:
             with open(self.savefile, 'r') as f:
                 # load all games from disk to memory
                 save_game = json.load(f)
+            self.new_game()
             if save_game["dead"] == False:
-                self.new_game()
                 self.game.__dict__ = save_game
             if self.hi_sco < save_game["score"]:
                 self.hi_sco = save_game["score"]
@@ -397,14 +400,14 @@ if __name__ == "__main__":
     while True:
         client, addr = server.accept()
 
-        # if addr[0] in blocked_ips:
-        #     continue
+        if addr[0] in blocked_ips:
+            continue
 
-        # try:
-        #     client.send("ok".encode("utf-8"))
-        #     client.send("code0006:f\n".encode("utf-8"))
-        # except e:
-        #     print(e)
-        #     continue
+        try:
+            client.send("ok".encode("utf-8"))
+            client.send("code0006:f\n".encode("utf-8"))
+        except e:
+            print(e)
+            continue
 
         Instance(client, addr)

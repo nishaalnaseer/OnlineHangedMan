@@ -7,7 +7,7 @@ import java.io.*;
 import java.net.Socket;
 import java.net.SocketException;
 
-public class HangedMan extends WindowAdapter implements ActionListener {
+public class HangedMan extends WindowAdapter {
     // sections
     // GUI
     // connect() that connects to server
@@ -22,11 +22,10 @@ public class HangedMan extends WindowAdapter implements ActionListener {
     private final JFrame frame = new JFrame("Hanged Man");
     private final JLabel pic, score_label, level_label, tracker_label, hi_sco_label;
     private String tracker = "Letters entered = ";
-    private String progress, last_word, hi_sco;
+    private String progress, hi_sco;
     private String level, score;
     private volatile int count;
     private boolean signedin = false;
-    private final JButton connect;
     private final JButton signin;
     private final JButton signup;
     private final JLabel info;
@@ -36,8 +35,7 @@ public class HangedMan extends WindowAdapter implements ActionListener {
     private final JButton submit;
     private final JTextField letters;
     private final JButton new_game;
-    private final JTable table;
-    private final JButton back;
+    private boolean on_hi_score;
 
     // network attributes
     private String host_ip;
@@ -82,13 +80,10 @@ public class HangedMan extends WindowAdapter implements ActionListener {
         signup.setBounds(275,200,95,30);
         hi_sco_button = new JButton("High Scores");
         hi_sco_button.setBounds(0,280,120,25);
-        connect = new JButton("Connect");
-        connect.setBounds(202,185,95,30);
-        frame.add(connect);
         submit = new JButton("Submit");
         letters = new JTextField("Letters");
-        submit.setBounds(290,290,75,20);
-        letters.setBounds(135,290,150,20);
+        submit.setBounds(290,285,75,20);
+        letters.setBounds(135,285,150,20);
         new_game = new JButton("New Game");
         new_game.setBounds(0, 240, 105, 30);
         frame.add(new_game);
@@ -98,6 +93,7 @@ public class HangedMan extends WindowAdapter implements ActionListener {
         frame.add(hi_sco_button);
         submit.setVisible(false);
         letters.setVisible(false);
+        on_hi_score = false;
 
         new_game.addActionListener(new ActionListener() {
             @Override
@@ -124,90 +120,66 @@ public class HangedMan extends WindowAdapter implements ActionListener {
         frame.setLayout(null);
         frame.setResizable(false);
         frame.setVisible(true);
+        JButton connect_to_server = new JButton("Connect to " + host_ip + ":" + port);
+        connect_to_server.setBounds(150,150,200,30);
+        frame.add(connect_to_server);
 
-        connect.addActionListener(new ActionListener() {
+        JTextField new_ip = new JTextField("New IP");
+        JTextField new_port = new JTextField("New Port");
+        JButton new_addr = new JButton("Connect to new Address");
+        new_ip.setBounds(57, 250, 100, 30);
+        new_port.setBounds(163, 250, 80, 30);
+        new_addr.setBounds(253, 250, 190, 30);
+
+        frame.add(new_ip);
+        frame.add(new_port);
+        frame.add(new_addr);
+
+        try {
+            if (!load_config()) {
+                connect_to_server.setVisible(false);
+            }
+            else {
+                connect_to_server.setText("Connect to " + host_ip + ":" + port);
+            }
+        } catch (IOException ex) {
+            // empty
+        }
+
+        new_ip.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                new_ip.setText("");
+            }
+        });
+
+        new_port.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                new_port.setText("");
+            }
+        });
+
+        new_addr.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                hide_all();
-                connect.setVisible(false);
-                frame.remove(connect);
-                JButton connect_to_server = new JButton("Connect to " + host_ip + ":" + port);
-                connect_to_server.setBounds(150,150,200,30);
-                frame.add(connect_to_server);
+                String ip_text = new_ip.getText();
+                String port_text = new_port.getText();
 
-                JTextField new_ip = new JTextField("New IP");
-                JTextField new_port = new JTextField("New Port");
-                JButton new_addr = new JButton("Connect to new Address");
-                new_ip.setBounds(57, 250, 100, 30);
-                new_port.setBounds(163, 250, 80, 30);
-                new_addr.setBounds(253, 250, 190, 30);
+                if ((ip_text.equals("")) || (port_text.equals("")) || (ip_text.equals(null))
+                        || (port_text.equals(null)) || (ip_text.equals("New IP")) || (port_text.equals("New Port")))
+                {
+                    JOptionPane.showMessageDialog(frame, "Error, probably in config file");
+                } else {
+                    final boolean addr_ok = check_ip_port(ip_text + ":" + port_text);
 
-                frame.add(new_ip);
-                frame.add(new_port);
-                frame.add(new_addr);
-
-                try {
-                    if (!load_config()) {
-                        connect_to_server.setVisible(false);
-                    }
-                    else {
-                        connect_to_server.setText("Connect to " + host_ip + ":" + port);
-                    }
-                } catch (IOException ex) {
-                    // empty
-                }
-
-                new_ip.addMouseListener(new MouseAdapter() {
-                    @Override
-                    public void mouseClicked(MouseEvent e) {
-                        new_ip.setText("");
-                    }
-                });
-
-                new_port.addMouseListener(new MouseAdapter() {
-                    @Override
-                    public void mouseClicked(MouseEvent e) {
-                        new_port.setText("");
-                    }
-                });
-                new_addr.setVisible(true);
-                new_addr.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        String ip_text = new_ip.getText();
-                        String port_text = new_port.getText();
-
-                        if ((ip_text.equals("")) || (port_text.equals("")) || (ip_text.equals(null))
-                                || (port_text.equals(null)) || (ip_text.equals("New IP")) || (port_text.equals("New Port")))
-                        {
-                            JOptionPane.showMessageDialog(frame, "Error, probably in config file");
-                        } else {
-                            final boolean addr_ok = check_ip_port(ip_text + ":" + port_text);
-
-                            if (addr_ok) {
-                                try {
-                                    save_config();
-                                } catch (IOException ex) {
-                                    throw new RuntimeException(ex);
-                                }
-                                connect_to_server.setText("Connect to " + host_ip + ":" + port);
-                                boolean state = server_connect_func();
-
-                                if (state) {
-                                    new_addr.setVisible(false);
-                                    new_ip.setVisible(false);
-                                    new_port.setVisible(false);
-                                    connect_to_server.setVisible(false);
-
-                                    signin_screen();
-                                }
-                            }
+                    if (addr_ok) {
+                        try {
+                            save_config();
+                        } catch (IOException ex) {
+                            throw new RuntimeException(ex);
                         }
-                    }
-                });
-                connect_to_server.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
+                        connect_to_server.setText("Connect to " + host_ip + ":" + port);
                         boolean state = server_connect_func();
 
                         if (state) {
@@ -219,22 +191,50 @@ public class HangedMan extends WindowAdapter implements ActionListener {
                             signin_screen();
                         }
                     }
-                });
+                }
+            }
+        });
+        connect_to_server.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                boolean state = server_connect_func();
+
+                if (state) {
+                    new_addr.setVisible(false);
+                    new_ip.setVisible(false);
+                    new_port.setVisible(false);
+                    connect_to_server.setVisible(false);
+
+                    signin_screen();
+                }
             }
         });
 
-        String[] header = {"Name, High Score"};
-        table = new JTable();
-        table.setBounds(30, 40, 200, 300);
-        JScrollPane scrolling = new JScrollPane(table);
-//        table.add(scrolling);
-        frame.add(table);
+        frame.addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent e) {
+                try {
+                    in.close();
+                } catch (IOException ex) {
+                    throw new RuntimeException(ex);
+                } catch (NullPointerException ex){
+                    // do nothing
+                }
+                try {
+                    out.close();
+                } catch (NullPointerException ex) {
+                    // do nothing
+                }
 
-        back = new JButton("Back");
-        back.setBounds(5,5,75,20);
-        frame.add(back);
-        back.setVisible(false);
-        table.setVisible(false);
+                try {
+                    client.close();
+                } catch (IOException ex) {
+                    throw new RuntimeException(ex);
+                } catch (NullPointerException ex){
+                    // do nothing
+                }
+
+            }
+        });
     }
 
     private void update_display() {
@@ -255,7 +255,7 @@ public class HangedMan extends WindowAdapter implements ActionListener {
 
     private void nextword() {
         progress  = game_args[1];
-        last_word = game_args[2];
+        JOptionPane.showMessageDialog(frame, "Your previous message was " + game_args[2]);
         score = game_args[3];
         count = 0;
         tracker = "Letters entered = ";
@@ -361,11 +361,10 @@ public class HangedMan extends WindowAdapter implements ActionListener {
             case "code0002:f":
                 return "Username not on server";
             case "code0003:f":
+            case "code0004:i":
                 return "Username or password missing on input";
             case "code0004:c":
                 return "Your password is wrong";
-            case "code0004:i":
-                return "Username or password missing on input";
             case "code0004:j":
                 return "Too many arguments";
             case "code0004:u":
@@ -502,12 +501,6 @@ public class HangedMan extends WindowAdapter implements ActionListener {
         frame.add(signup_password);
     }
 
-    private void key_pressed(KeyEvent e) {
-        if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-            submit.doClick();
-        }
-    }
-
     private void game_screen() {
         server_to_functions();
 
@@ -538,8 +531,10 @@ public class HangedMan extends WindowAdapter implements ActionListener {
         hi_sco_button.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                back.setVisible(true);
-                send_high_scores_req();
+                if (!on_hi_score) {
+                    send_high_scores_req();
+                    on_hi_score = true;
+                }
             }
         });
 
@@ -693,9 +688,6 @@ public class HangedMan extends WindowAdapter implements ActionListener {
                 section = "";
 
             } else {
-//                if (ch == ';') {
-//                    section = "";
-//                }
                 section += ch;
 
                 if (i == str_len-1) {
@@ -746,40 +738,24 @@ public class HangedMan extends WindowAdapter implements ActionListener {
             String[] data = {names[x], hi_scos[x]};
             scos[x] = data;
         }
-        table.setV
+        
+        String[] column = {"Name","High Score"};
+        JTable table = new JTable(scos,column);
+        table.setBounds(30,40,100,150);
+        JScrollPane scrolling = new JScrollPane(table);
+        JFrame table_frame = new JFrame();
+        table_frame.setBounds(25,25,200,200);
+        table_frame.add(scrolling);
+        table_frame.setVisible(true);
 
-        back.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                back.setVisible(false);
-                tracker_label.setVisible(true);
-                pic.setVisible(true);
-                new_game.setVisible(true);
-                hi_sco_label.setVisible(true);
-                level_label.setVisible(true);
-                score_label.setVisible(true);
-                letters.setVisible(true);
-                submit.setVisible(true);
-                change_level.setVisible(true);
-                table.setVisible(false);
-                game_screen();
+        table_frame.addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent e) {
+                on_hi_score = false;
             }
         });
-
     }
 
     private void send_high_scores_req() {
-        tracker_label.setVisible(false);
-        pic.setVisible(false);
-        new_game.setVisible(false);
-        hi_sco_label.setVisible(false);
-        level_label.setVisible(false);
-        score_label.setVisible(false);
-        letters.setVisible(false);
-        submit.setVisible(false);
-        change_level.setVisible(false);
-        hi_sco_button.setVisible(false);
-
         out.println("hi_scos");
 
         try {
@@ -788,11 +764,6 @@ public class HangedMan extends WindowAdapter implements ActionListener {
         } catch (IOException error) {
             JOptionPane.showMessageDialog(frame, "Unknown Error " + error);
         }
-    }
-
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        // TODO main loop
     }
 
     private boolean server_connect_func() {
@@ -811,26 +782,10 @@ public class HangedMan extends WindowAdapter implements ActionListener {
             JOptionPane.showMessageDialog(frame, "IOException");
             return false;
         }
-        if (ok) {
-            connect.setBounds(395,40,95,30);
-        }
         return true;
-
-//        String fromServer;
-//        try {
-//            fromServer = in.readLine();
-//            if (fromServer.equals("ok")) {
-//
-//            } else {
-//                JOptionPane.showMessageDialog(frame, "Server return not OK!");
-//            }
-//        }
-//        catch (IOException error) {
-//            JOptionPane.showMessageDialog(frame, error);
-//        }
     }
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) throws IOException {
         HangedMan Game = new HangedMan();
     }
 }
