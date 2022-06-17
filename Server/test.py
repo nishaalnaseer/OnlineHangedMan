@@ -1,26 +1,44 @@
-import json
+import socket, os, tools, users, threading, json
+from game import Game
+from time import time
+from datetime import datetime
+from dataclasses import dataclass
 
+if os.name == "nt":
+    slash = '\\'
+else:
+    slash = '/'
 
-class wot:
-    def __init__(self, name):
-        self.name = name
+def exit():
+    """end server at any time  by entering exit"""
+    while True:
+        inp = input()
+        if inp == "exit":
+            os._exit(0)
 
-c = wot("okay")
+ip, port = "127.0.0.1", 65000
 
-print(c.name)
-c.name = "no"
-print(c.name)
-c.name = "i cant od dis"
-print(c.name)
+@dataclass
+class InstanaceInfo:
+    ip: str
+    player_id: str
+    cport: str
+    block_counter: int
+    big_block_counter: int
+    username: str
+    input_functions: dict
+    responses: dict
+    client: socket.socket
 
-c.__dict__.update({"name": 1})
+ii = InstanaceInfo(ip=ip)
 
-print(c.name)
+server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+server.bind(("localhost", 65000))
+server.listen(1)
+print(type("helo"))
 
-with open("test.json", 'r') as f:
-    stuff = json.load(f)
-
-print(stuff)
-
-with open("test.json", 'w') as f:
-    json.dump(c.__dict__, f)
+while True:
+    client, addr = server.accept()
+    print(type(client))
+    print(type("helo"))
+print(ii)
