@@ -1,7 +1,8 @@
-import socket, os, tools, users, threading, json
+import socket, tools, users, json, os
 from game import Game
 from time import time
 from datetime import datetime
+from threading import Thread
 
 if os.name == "nt":
     slash = '\\'
@@ -16,7 +17,9 @@ def exit():
             os._exit(0)
 
 ip, port = "127.0.0.1", 65000
-            
+
+
+
 class Instance:
     """Named Instance because this is an instance of a player in a Game()"""
     def __init__(self, client, addr):
@@ -386,7 +389,7 @@ class Instance:
             f.write(log_statement)
 
 if __name__ == "__main__":
-    t = threading.Thread(target=exit)
+    t = Thread(target=exit)
     t.start()  # classic thrading
 
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
