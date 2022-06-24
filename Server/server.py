@@ -5,8 +5,10 @@ from datetime import datetime
 from threading import Thread
 
 if os.name == "nt":
+    #  for windows
     slash = '\\'
 else:
+    #  for linux
     slash = '/'
 
 def exit():
@@ -17,8 +19,6 @@ def exit():
             os._exit(0)
 
 ip, port = "127.0.0.1", 65000
-
-
 
 class Instance:
     """Named Instance because this is an instance of a player in a Game()"""
@@ -78,7 +78,7 @@ class Instance:
 
     def data_stream(self):
         """main function of this class
-        a loop where client and server can communicate in turn"""
+        a loop where client and server communicates in turn"""
         global blocked_ips
         while True:
             # message from client
@@ -89,6 +89,7 @@ class Instance:
                 try:
                     self.save_game()
                 except AttributeError:
+                    # block ip
                     self.blocker(code="code0012:a", info="no info ConnectionResetError")
                     break
                 break
@@ -97,6 +98,7 @@ class Instance:
                 self.save_game()
                 break
 
+            # the following letters are recieved from java clients and needs to be removed
             info = info.replace('\n', '')
             info = info.replace('\r', '')
 
@@ -230,6 +232,7 @@ class Instance:
         print(statement + "'")
 
     def print_response(self, func, response):
+        # make sense of server responses to client
         statement = f"Function: {func} - Sent: '{self.responses[response]}' to {self.id}"
         print(statement)
 
@@ -320,6 +323,7 @@ class Instance:
         return "code0009:f"
 
     def dead(self, args=[]):
+        # this is a dummy function that returns code for dead player
         return "code0010:a"
 
     def change_level(self, args):
@@ -333,6 +337,7 @@ class Instance:
         return response
 
     def submit(self, args):
+
         if len(args) != 2:
             return "code0008:f"
 
@@ -352,21 +357,26 @@ class Instance:
         return response
 
     def return_hi_scos(self, args=[]):
+        # a function that returns player names and hiscores in ascending order
+
         with open("hi-scos.json", 'r') as f:
             scores = json.load(f)
 
         keys_to_send = ""
         values_to_send = ""
-        k_len = len(scores.keys())
-        data = dict(sorted(scores.items(), key=lambda items : items[1]))
+        k_len = len(scores.keys()) # send len of the array so it will be easier to code the client
+        data = dict(sorted(scores.items(), key=lambda items : items[1])) # sort dict
 
         for k, v in data.items():
-            keys_to_send += f"{k} "
-            values_to_send += f"{v} "
+            keys_to_send += f"{k} " # keys into a string
+            values_to_send += f"{v} " # values into a string
 
         return f"scores {keys_to_send}{values_to_send}{k_len}"
 
     def blocker(self, code, info):
+        # a function to block ips if they enter invalid codes
+        # a client could be blocked by too many disconnects
+        global blocked_ips 
         self.block_counter += 1
         self.big_block_counter += 1
         now = datetime.now()
@@ -389,7 +399,7 @@ class Instance:
             f.write(log_statement)
 
 if __name__ == "__main__":
-    t = Thread(target=exit)
+    t = Thread(target=exit) 
     t.start()  # classic thrading
 
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -404,13 +414,7 @@ if __name__ == "__main__":
         client, addr = server.accept()
 
         if addr[0] in blocked_ips:
-            continue
-
-        try:
-            client.send("ok".encode("utf-8"))
-            client.send("code0006:f\n".encode("utf-8"))
-        except e:
-            print(e)
+            # if ip in the blocked list the below code will not be executed
             continue
 
         Instance(client, addr)
